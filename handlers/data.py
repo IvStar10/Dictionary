@@ -11,6 +11,15 @@ class JSON:
         words = json[date]
         return words
 
+    def get_all_words(self) -> dict[str, str]:
+        json: dict = self.__load_json()
+        words = {}
+
+        for date in json.keys():  # Делаем один общий словарь со всеми словами.
+            words |= self.get_words(date)  # Объединяем словари.
+
+        return words
+
     def add_word(self, date: str, word: str, translating: str) -> None:
         json = self.__load_json()
         try:
@@ -31,8 +40,7 @@ class JSON:
             json.dump(data, file)
 
     def test(self):
-        self.add_word('2.10.2025', 'another word', 'translating')
-        return self.get_words('2.10.2025')
+        return self.get_all_words()
 
 
 class ParseDate:
