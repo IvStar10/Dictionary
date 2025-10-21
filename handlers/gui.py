@@ -15,7 +15,8 @@ class MainWindow(tk.Tk):
         self.__pack_widgets()
 
     def __define_internal_vars(self):
-        self.radiobtn_time_var = tk.IntVar()
+        self.radiobtn_tests_time_var = tk.IntVar()
+        self.radiobtn_tests_lang_var = tk.IntVar()
 
     def __define_tabs(self):
         self.notebook = ttk.Notebook(master=self)
@@ -45,14 +46,37 @@ class MainWindow(tk.Tk):
         self.label_test_time = ttk.Label(
             master=self.frame_tests_time, text="Тестировать за:")
         self.radiobtn_all_time = ttk.Radiobutton(
-            master=self.frame_tests_time, text='всё время', variable=self.radiobtn_time_var, value=1)
+            master=self.frame_tests_time, text='всё время',
+            variable=self.radiobtn_tests_time_var, value=1)
         self.radiobtn_fixed_time = ttk.Radiobutton(
-            master=self.frame_tests_time, text='определённое время', variable=self.radiobtn_time_var, value=2)
+            master=self.frame_tests_time, text='определённое время',
+            variable=self.radiobtn_tests_time_var, value=2)
+
+        # На рамке "lang"
+        self.radiobtn_test_lang1 = ttk.Radiobutton(
+                master=self.frame_tests_lang, text="англ.-рус.",
+                variable=self.radiobtn_tests_lang_var, value=1)
+        self.radiobtn_test_lang2 = ttk.Radiobutton(
+                master=self.frame_tests_lang, text="рус.-англ.",
+                variable=self.radiobtn_tests_lang_var, value=2)
+
+        self.btn_start_test = ttk.Button(
+                master=self.tab_tests, text='Начать тест',
+                command=self.__btn_start_test_click)
 
     def __pack_widgets(self):
         self.label_test_time.pack()
         self.radiobtn_all_time.pack()
         self.radiobtn_fixed_time.pack()
+        
+        self.radiobtn_test_lang1.pack()
+        self.radiobtn_test_lang2.pack()
+
+        self.btn_start_test.pack(anchor='e')
+
+    # Обрабончики нажатий кнопок
+    def __btn_start_test_click(self) -> None:
+        ...
 
 
 class AddWordWindow(tk.Tk):
