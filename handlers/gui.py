@@ -76,7 +76,7 @@ class MainWindow(tk.Tk):
 
     # Обрабончики нажатий кнопок
     def __btn_start_test_click(self) -> None:
-        ...
+        self.test_window = TestWindow()
 
 
 class AddWordWindow(tk.Tk):
@@ -88,7 +88,23 @@ class SelectDateWindow(tk.Tk):
 
 
 class TestWindow(tk.Tk):
-    ...
+    def __init__(self):
+        pass
+    
+    def __define_internal_vars(self):
+        self._user_translating = tk.StringVar()
+
+    def __define_widgets(self):
+        ...
+
+    def __pack_widgets(self):
+        ...
+    
+    def __button_check_click(self):
+        ...
+
+    def __button_next_click(self):
+        ...
 
 
 if __name__ == "__main__":
