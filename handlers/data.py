@@ -53,6 +53,6 @@ class ParseDate:
 
 
 if __name__ == "__main__":
-    json_handler = JSON(path='../data/test_words.json')  # Здесь путь считаем от data.py. В main'е будем считать от main.py.
+    # Здесь путь считаем от data.py. В main'е будем считать от main.py.
+    json_handler = JSON(path='../data/test_words.json')
     print(json_handler.test())
-

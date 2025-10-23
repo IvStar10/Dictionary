@@ -1,5 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
+import logging
+
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 class MainWindow(tk.Tk):
@@ -17,7 +21,7 @@ class MainWindow(tk.Tk):
         self.__pack_widgets()
 
     def __define_internal_vars(self):
-        self.radiobtn_tests_time_var = tk.IntVar()
+        self.radiobtn_tests_time_var = tk.StringVar()
         self.radiobtn_tests_lang_var = tk.IntVar()
 
     def __define_tabs(self):
@@ -49,10 +53,10 @@ class MainWindow(tk.Tk):
             master=self.frame_tests_time, text="Тестировать за:")
         self.radiobtn_all_time = ttk.Radiobutton(
             master=self.frame_tests_time, text='всё время',
-            variable=self.radiobtn_tests_time_var, value=1)
+            variable=self.radiobtn_tests_time_var, value='all')
         self.radiobtn_fixed_time = ttk.Radiobutton(
             master=self.frame_tests_time, text='определённое время',
-            variable=self.radiobtn_tests_time_var, value=2)
+            variable=self.radiobtn_tests_time_var, value='fixed')
 
         # На рамке "lang"
         self.radiobtn_test_lang1 = ttk.Radiobutton(
@@ -78,7 +82,9 @@ class MainWindow(tk.Tk):
 
     # Обработчики нажатий кнопок
     def __btn_start_test_click(self) -> None:
-        self.test_window = TestWindow(data_handler=self.data_handler)
+        self.test_window = TestWindow(data_handler=self.data_handler,
+                                      tests_time=self.radiobtn_tests_time_var.get(),
+                                      tests_lang=self.radiobtn_tests_lang_var.get())
 
 
 class AddWordWindow(tk.Tk):
@@ -90,8 +96,11 @@ class SelectDateWindow(tk.Tk):
 
 
 class TestWindow(tk.Tk):
-    def __init__(self, *, data_handler):
+    def __init__(self, *, data_handler, tests_time, tests_lang):
         self.data_handler = data_handler
+        self.tests_time = tests_time
+        self.tests_lang = tests_lang
+
         super().__init__()
 
         self.__define_internal_vars()
@@ -129,7 +138,24 @@ class TestWindow(tk.Tk):
         self.button_next.pack(anchor='e')
 
     def __button_check_click(self):
+        logging.debug(f"{self.tests_time=}")
+        logging.debug(f"{self.tests_lang=}")
+
         word: str = self._user_translating.get()
+
+        match self.tests_time:
+            # Здесь мы формируем словарь со словами, которые будем проверять
+            # в зависимости от времени.
+            case 'all':
+                ...
+            case 'fixed':
+                ...
+
+        match self.tests_lang:
+            case 1:
+                ...
+            case 2:
+                ...
 
     def __button_next_click(self):
         ...
