@@ -54,27 +54,27 @@ class MainWindow(tk.Tk):
 
         # На рамке "lang"
         self.radiobtn_test_lang1 = ttk.Radiobutton(
-                master=self.frame_tests_lang, text="англ.-рус.",
-                variable=self.radiobtn_tests_lang_var, value=1)
+            master=self.frame_tests_lang, text="англ.-рус.",
+            variable=self.radiobtn_tests_lang_var, value=1)
         self.radiobtn_test_lang2 = ttk.Radiobutton(
-                master=self.frame_tests_lang, text="рус.-англ.",
-                variable=self.radiobtn_tests_lang_var, value=2)
+            master=self.frame_tests_lang, text="рус.-англ.",
+            variable=self.radiobtn_tests_lang_var, value=2)
 
         self.btn_start_test = ttk.Button(
-                master=self.tab_tests, text='Начать тест',
-                command=self.__btn_start_test_click)
+            master=self.tab_tests, text='Начать тест',
+            command=self.__btn_start_test_click)
 
     def __pack_widgets(self):
         self.label_test_time.pack()
         self.radiobtn_all_time.pack()
         self.radiobtn_fixed_time.pack()
-        
+
         self.radiobtn_test_lang1.pack()
         self.radiobtn_test_lang2.pack()
 
         self.btn_start_test.pack(anchor='e')
 
-    # Обрабончики нажатий кнопок
+    # Обработчики нажатий кнопок
     def __btn_start_test_click(self) -> None:
         self.test_window = TestWindow()
 
@@ -89,17 +89,42 @@ class SelectDateWindow(tk.Tk):
 
 class TestWindow(tk.Tk):
     def __init__(self):
-        pass
-    
+        super().__init__()
+
+        self.__define_internal_vars()
+        self.__define_widgets()
+        self.__pack_widgets()
+
     def __define_internal_vars(self):
         self._user_translating = tk.StringVar()
 
     def __define_widgets(self):
-        ...
+        self.label_greeting = ttk.Label(master=self, text='Переведите слово:')
+        self.label_word = ttk.Label(master=self, text='')
+
+        self.entry_translating = ttk.Entry(
+            master=self, textvariable=self._user_translating)
+        self.button_check = ttk.Button(
+            master=self, text='Проверить', command=self.__button_check_click)
+
+        self.label_result = ttk.Label(master=self, text='')
+        self.label_true_translating = ttk.Label(master=self, text='')
+
+        self.button_next = ttk.Button(
+            master=self, text='Далее', command=self.__button_next_click)
 
     def __pack_widgets(self):
-        ...
-    
+        self.label_greeting.pack()
+        self.label_word.pack()
+
+        self.entry_translating.pack()
+        self.button_check.pack(anchor='e')
+
+        self.label_result.pack()
+        self.label_true_translating.pack()
+
+        self.button_next.pack(anchor='e')
+
     def __button_check_click(self):
         ...
 
@@ -108,5 +133,5 @@ class TestWindow(tk.Tk):
 
 
 if __name__ == "__main__":
-    main_window = MainWindow()
-    main_window.mainloop()
+    root_window = MainWindow()
+    root_window.mainloop()
