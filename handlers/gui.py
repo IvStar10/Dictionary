@@ -3,7 +3,9 @@ from tkinter import ttk
 
 
 class MainWindow(tk.Tk):
-    def __init__(self):
+    def __init__(self, *, data_handler):
+        self.data_handler = data_handler
+
         super().__init__()
 
         self.title('')
@@ -76,7 +78,7 @@ class MainWindow(tk.Tk):
 
     # Обработчики нажатий кнопок
     def __btn_start_test_click(self) -> None:
-        self.test_window = TestWindow()
+        self.test_window = TestWindow(data_handler=self.data_handler)
 
 
 class AddWordWindow(tk.Tk):
@@ -88,7 +90,8 @@ class SelectDateWindow(tk.Tk):
 
 
 class TestWindow(tk.Tk):
-    def __init__(self):
+    def __init__(self, *, data_handler):
+        self.data_handler = data_handler
         super().__init__()
 
         self.__define_internal_vars()
@@ -126,12 +129,7 @@ class TestWindow(tk.Tk):
         self.button_next.pack(anchor='e')
 
     def __button_check_click(self):
-        ...
+        word: str = self._user_translating.get()
 
     def __button_next_click(self):
         ...
-
-
-if __name__ == "__main__":
-    root_window = MainWindow()
-    root_window.mainloop()
