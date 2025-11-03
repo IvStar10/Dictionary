@@ -1,13 +1,14 @@
 import tkinter as tk
 from tkinter import ttk
 import logging
+from .data import JSON
 
 
 logging.basicConfig(level=logging.DEBUG)
 
 
 class MainWindow(tk.Tk):
-    def __init__(self, *, data_handler):
+    def __init__(self, *, data_handler: JSON):
         self.data_handler = data_handler
 
         super().__init__()
@@ -96,7 +97,7 @@ class SelectDateWindow(tk.Tk):
 
 
 class TestWindow(tk.Tk):
-    def __init__(self, *, data_handler, tests_time, tests_lang):
+    def __init__(self, *, data_handler: JSON, tests_time, tests_lang):
         self.data_handler = data_handler
         self.tests_time = tests_time
         self.tests_lang = tests_lang
@@ -141,21 +142,26 @@ class TestWindow(tk.Tk):
         logging.debug(f"{self.tests_time=}")
         logging.debug(f"{self.tests_lang=}")
 
-        word: str = self._user_translating.get()
+        user_word: str = self._user_translating.get()
 
         match self.tests_time:
             # Здесь мы формируем словарь со словами, которые будем проверять
             # в зависимости от времени.
             case 'all':
-                ...
+                words: dict = self.data_handler.get_all_words()
             case 'fixed':
-                ...
+                # FIXME: Здесь надо будет создавать окно с выбором даты.
+                logging.error("Вызов нереализованой функции.")
+                self.destroy()
 
         match self.tests_lang:
             case 1:
+                # Ничего не делаем, слова и так в правильном порядке.
                 ...
             case 2:
-                ...
+                # Переворачиваем словарь.
+                words = {value: key for key, value in words.items()}
+                logging.debug("Перевёрнутый словарь: %s", (words))  # FIXME: Вывыдит не все слова, только за последнюю дату.
 
     def __button_next_click(self):
         ...
