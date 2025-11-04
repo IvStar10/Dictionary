@@ -12,6 +12,7 @@ class JSON:
         return words
 
     def get_all_words(self) -> dict[str, str]:
+        # Кстати, при объединении словарей несколько одинаковых ключей превращаются в один.
         json: dict = self.__load_json()
         words = {}
 

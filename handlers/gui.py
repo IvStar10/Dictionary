@@ -149,19 +149,20 @@ class TestWindow(tk.Tk):
             # в зависимости от времени.
             case 'all':
                 words: dict = self.data_handler.get_all_words()
+                logging.debug(f'{words=}')
             case 'fixed':
-                # FIXME: Здесь надо будет создавать окно с выбором даты.
+                # TODO: Здесь надо будет создавать окно с выбором даты.
                 logging.error("Вызов нереализованой функции.")
                 self.destroy()
 
         match self.tests_lang:
             case 1:
                 # Ничего не делаем, слова и так в правильном порядке.
-                ...
+                logging.debug("Не перевёрнутый словарь: %s", (words))
             case 2:
                 # Переворачиваем словарь.
                 words = {value: key for key, value in words.items()}
-                logging.debug("Перевёрнутый словарь: %s", (words))  # FIXME: Вывыдит не все слова, только за последнюю дату.
+                logging.debug("Перевёрнутый словарь: %s", (words))
 
     def __button_next_click(self):
         ...
