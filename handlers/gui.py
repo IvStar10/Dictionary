@@ -98,6 +98,7 @@ class SelectDateWindow(tk.Tk):
 
 class TestWindow(tk.Tk):
     def __init__(self, *, data_handler: JSON, tests_time, tests_lang):
+        # Прокидываем обработчики и настройки.
         self.data_handler = data_handler
         self.tests_time = tests_time
         self.tests_lang = tests_lang
@@ -107,6 +108,9 @@ class TestWindow(tk.Tk):
         self.__define_internal_vars()
         self.__define_widgets()
         self.__pack_widgets()
+
+        self.__form_words_dict()
+        self.__write_word_into_label()
 
     def __define_internal_vars(self):
         self._user_translating = tk.StringVar()
@@ -138,12 +142,7 @@ class TestWindow(tk.Tk):
 
         self.button_next.pack(anchor='e')
 
-    def __button_check_click(self):
-        logging.debug(f"{self.tests_time=}")
-        logging.debug(f"{self.tests_lang=}")
-
-        user_word: str = self._user_translating.get()
-
+    def __form_words_dict(self):
         match self.tests_time:
             # Здесь мы формируем словарь со словами, которые будем проверять
             # в зависимости от времени.
@@ -157,12 +156,34 @@ class TestWindow(tk.Tk):
 
         match self.tests_lang:
             case 1:
+                self.words = words
                 # Ничего не делаем, слова и так в правильном порядке.
-                logging.debug("Не перевёрнутый словарь: %s", (words))
+                logging.debug("Не перевёрнутый словарь: %s", (self.words))
             case 2:
                 # Переворачиваем словарь.
-                words = {value: key for key, value in words.items()}
-                logging.debug("Перевёрнутый словарь: %s", (words))
+                self.words = {value: key for key, value in words.items()}
+                logging.debug("Перевёрнутый словарь: %s", (self.words))
+
+    def __write_word_into_label(self):
+        self.current_word = next(iter(self.words.keys()))
+        self.label_word.configure(text=self.current_word)
+
+    def __button_check_click(self):
+        logging.debug(self.entry_translating.get())
+        user_translating: str = self.entry_translating.get().strip()
+
+        current_translating = self.words[self.current_word]
+        logging.debug(f'{current_translating=}')
+
+        logging.debug(f'{user_translating=}')
+
+        if user_translating == current_translating:
+            self.label_result.configure(text="Правильно!", foreground='green')
+        else:
+            self.label_result.configure(text="Неправильно :(", foreground='red')
+
+        self.label_true_translating.configure(text=f"Правильный перевод: {current_translating}")
 
     def __button_next_click(self):
         ...
+
