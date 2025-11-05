@@ -1,3 +1,4 @@
+# TODO: Навести порядок в логах (ненужные убрать, нужные добавить), а то сейчас бардак творится!
 import tkinter as tk
 from tkinter import ttk
 import logging
@@ -151,7 +152,7 @@ class TestWindow(tk.Tk):
                 logging.debug(f'{words=}')
             case 'fixed':
                 # TODO: Здесь надо будет создавать окно с выбором даты.
-                logging.error("Вызов нереализованой функции.")
+                logging.error("Вызов нереализованной функции.")
                 self.destroy()
 
         match self.tests_lang:
@@ -180,10 +181,11 @@ class TestWindow(tk.Tk):
         if user_translating == current_translating:
             self.label_result.configure(text="Правильно!", foreground='green')
         else:
-            self.label_result.configure(text="Неправильно :(", foreground='red')
+            self.label_result.configure(
+                text="Неправильно :(", foreground='red')
 
-        self.label_true_translating.configure(text=f"Правильный перевод: {current_translating}")
+        self.label_true_translating.configure(
+            text=f"Правильный перевод: {current_translating}")
 
     def __button_next_click(self):
         ...
-
