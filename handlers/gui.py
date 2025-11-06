@@ -1,11 +1,17 @@
 # TODO: Навести порядок в логах (ненужные убрать, нужные добавить), а то сейчас бардак творится!
 import tkinter as tk
 from tkinter import ttk
+from random import choice
 import logging
 from .data import JSON
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+
+
+def get_random_dict_key(dictionary: dict):
+    # TODO: Пожалуй, стоит генерировать последовательновть через random.sample.
+    return choice(list(dictionary))
 
 
 class MainWindow(tk.Tk):
@@ -111,7 +117,9 @@ class TestWindow(tk.Tk):
         self.__pack_widgets()
 
         self.__form_words_dict()
-        self.__write_word_into_label()
+
+        self.current_word = get_random_dict_key(self.words)
+        self.label_word.configure(text=self.current_word)
 
     def __define_internal_vars(self):
         self._user_translating = tk.StringVar()
@@ -165,11 +173,8 @@ class TestWindow(tk.Tk):
                 self.words = {value: key for key, value in words.items()}
                 logging.debug("Перевёрнутый словарь: %s", (self.words))
 
-    def __write_word_into_label(self):
-        self.current_word = next(iter(self.words.keys()))
-        self.label_word.configure(text=self.current_word)
-
     def __button_check_click(self):
+        logging.info('Нажата кнопка "Проверить"')
         logging.debug(self.entry_translating.get())
         user_translating: str = self.entry_translating.get().strip()
 
@@ -188,4 +193,17 @@ class TestWindow(tk.Tk):
             text=f"Правильный перевод: {current_translating}")
 
     def __button_next_click(self):
-        ...
+        logging.info('Нажата кнопка "Далее".')
+
+        # Сбрасываем надписи
+        self.label_result.configure(text='')
+        self.label_true_translating.configure(text='')
+
+        # Сбрасываем поле ввода
+        self.entry_translating.delete(0, last='end')
+
+        # Берём случайное слово
+        self.current_word = get_random_dict_key(self.words)
+
+        # Меняем надписи
+        self.label_word.configure(text=self.current_word)
