@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def get_random_dict_key(dictionary: dict):
-    # TODO: Пожалуй, стоит генерировать последовательновть через random.sample.
+    # TODO: Пожалуй, стоит генерировать последовательность через random.sample.
     return choice(list(dictionary))
 
 
@@ -54,6 +54,10 @@ class MainWindow(tk.Tk):
         self.frame_tests_lang.pack()
 
     def __define_widgets(self):
+        # На вкладке "Словарь"
+        self.button_select_date = ttk.Button(
+            master=self.tab_dictionary, text='Выбрать дату', command=self.__button_select_date_click)
+
         # На вкладке "Тесты"
 
         # На рамке "time"
@@ -79,6 +83,8 @@ class MainWindow(tk.Tk):
             command=self.__btn_start_test_click)
 
     def __pack_widgets(self):
+        self.button_select_date.pack()
+
         self.label_test_time.pack()
         self.radiobtn_all_time.pack()
         self.radiobtn_fixed_time.pack()
@@ -89,6 +95,9 @@ class MainWindow(tk.Tk):
         self.btn_start_test.pack(anchor='e')
 
     # Обработчики нажатий кнопок
+    def __button_select_date_click(self) -> None:
+        self.select_date_window = SelectDateWindow()
+
     def __btn_start_test_click(self) -> None:
         self.test_window = TestWindow(data_handler=self.data_handler,
                                       tests_time=self.radiobtn_tests_time_var.get(),
@@ -100,7 +109,35 @@ class AddWordWindow(tk.Tk):
 
 
 class SelectDateWindow(tk.Tk):
-    ...
+    def __init__(self):
+        super().__init__()
+
+        self.title('Выбор даты')
+
+        self.__define_internal_vars()
+        self.__define_widgets()
+        self.__pack_widgets()
+
+    def __define_internal_vars(self):
+        ...
+
+    def __define_widgets(self):
+        self.label_instruction = ttk.Label(
+            self, text='Введите дату в формате "дд.мм.гггг"')
+        self.entry_date = ttk.Entry(self)
+        self.button_ok = ttk.Button(
+            self, text='Выбрать', command=self.__button_ok_click)
+
+    def __pack_widgets(self):
+        self.label_instruction.pack()
+        self.entry_date.pack()
+        self.button_ok.pack(anchor='e')
+
+    def __button_ok_click(self):
+        ...
+
+    def get_date(self):
+        ...
 
 
 class TestWindow(tk.Tk):
