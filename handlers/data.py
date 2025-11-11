@@ -1,5 +1,9 @@
 import json
 import re
+from collections import namedtuple
+
+
+Date = namedtuple('Date', ['day', 'month', 'year'])
 
 
 class JSON:
@@ -46,14 +50,32 @@ class JSON:
 
 class ParseDate:
     def __init__(self) -> None:
-        self._REGEXPR_DATE = ...
+        self._REGEXPR_DATE = r"(\d\d)[\./-](\d\d)[\./-](\d\d\d\d)"
 
-    # TODO: Тут бы возвращать namedtuple
-    def parse(self, date: str) -> tuple[int, int, int]:
-        ...
+    def parse(self, date: str) -> Date | None:
+        date = date.strip()
+        found_date = re.search(self._REGEXPR_DATE, date)
+
+        try:
+            day = found_date.group(1)
+            month = found_date.group(2)
+            year = found_date.group(3)
+        except AttributeError:
+            return None  # Тут бы исключение поднимать...
+
+        result = Date(day, month, year)
+        return result
 
 
 if __name__ == "__main__":
     # Здесь путь считаем от data.py. В main'е будем считать от main.py.
     json_handler = JSON(path='../data/test_words.json')
     print(json_handler.test())
+
+    date_parser = ParseDate()
+    dates = ('01.01.2025', '12.05.2025', '02.11.2025', 
+             '2.11.2025', '12.5.2025', '1.1.205', 
+             '07.11.2025', '07-11-2025', '07/11/2025')
+    for date in dates:
+        print(date_parser.parse(date))
+
