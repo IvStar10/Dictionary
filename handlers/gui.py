@@ -1,9 +1,13 @@
 # TODO: Навести порядок в логах (ненужные убрать, нужные добавить), а то сейчас бардак творится!
+import logging
+from random import choice
+
 import tkinter as tk
 from tkinter import ttk
-from random import choice
-import logging
+from tkinter.messagebox import showerror
+
 from .data import JSON
+from .data import ParseDate, Date, InvalidDateError
 
 
 logging.basicConfig(level=logging.INFO)
@@ -97,6 +101,8 @@ class MainWindow(tk.Tk):
     # Обработчики нажатий кнопок
     def __button_select_date_click(self) -> None:
         self.select_date_window = SelectDateWindow()
+        self.user_date = self.select_date_window.get_date()
+        logging.debug(f'{self.user_date=}')
 
     def __btn_start_test_click(self) -> None:
         self.test_window = TestWindow(data_handler=self.data_handler,
@@ -119,12 +125,12 @@ class SelectDateWindow(tk.Tk):
         self.__pack_widgets()
 
     def __define_internal_vars(self):
-        ...
+        self.user_date = tk.StringVar()
 
     def __define_widgets(self):
         self.label_instruction = ttk.Label(
             self, text='Введите дату в формате "дд.мм.гггг"')
-        self.entry_date = ttk.Entry(self)
+        self.entry_date = ttk.Entry(self, textvariable=self.user_date)
         self.button_ok = ttk.Button(
             self, text='Выбрать', command=self.__button_ok_click)
 
@@ -134,7 +140,19 @@ class SelectDateWindow(tk.Tk):
         self.button_ok.pack(anchor='e')
 
     def __button_ok_click(self):
-        ...
+        logging.info('Кнопка "Выбрать" (на окне с выбором даты) нажата.')
+        date_parser = ParseDate()
+        user_date: str = self.entry_date.get()
+        try:
+            parsed_date: Date = date_parser.parse(user_date)
+        except InvalidDateError:
+            logging.error(
+                f'Пользователь ввёл неправильную дату, а именно - {user_date}')
+            showerror("Неправильная дата",
+                      """Введена неправильная дата!
+Пожалуйста, введите дату в формате \"дд.мм.гггг\"
+Например, 01.01.2025 или 08.11.2020""")
+            return
 
     def get_date(self):
         ...

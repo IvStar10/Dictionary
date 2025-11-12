@@ -6,6 +6,10 @@ from collections import namedtuple
 Date = namedtuple('Date', ['day', 'month', 'year'])
 
 
+class InvalidDateError(Exception):
+    pass
+
+
 class JSON:
     def __init__(self, path: str) -> None:
         self._path = path
@@ -50,9 +54,9 @@ class JSON:
 
 class ParseDate:
     def __init__(self) -> None:
-        self._REGEXPR_DATE = r"(\d\d)[\./-](\d\d)[\./-](\d\d\d\d)"
+        self._REGEXPR_DATE = r"(\d{1,2})[\./-](\d{1,2})[\./-](\d{3,4})"
 
-    def parse(self, date: str) -> Date | None:
+    def parse(self, date: str) -> Date:
         date = date.strip()
         found_date = re.search(self._REGEXPR_DATE, date)
 
@@ -61,7 +65,7 @@ class ParseDate:
             month = found_date.group(2)
             year = found_date.group(3)
         except AttributeError:
-            return None  # Тут бы исключение поднимать...
+            raise InvalidDateError
 
         result = Date(day, month, year)
         return result
@@ -69,8 +73,8 @@ class ParseDate:
 
 if __name__ == "__main__":
     # Здесь путь считаем от data.py. В main'е будем считать от main.py.
-    json_handler = JSON(path='../data/test_words.json')
-    print(json_handler.test())
+    # json_handler = JSON(path='../data/test_words.json')
+    # print(json_handler.test())
 
     date_parser = ParseDate()
     dates = ('01.01.2025', '12.05.2025', '02.11.2025',
