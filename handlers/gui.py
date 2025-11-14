@@ -10,7 +10,11 @@ from .data import JSON
 from .data import ParseDate, Date, InvalidDateError
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
+
+
+# Знаю, использовать глобальную переменную для этих целей не есть хорошо...
+user_selected_date: Date | None = None  # FIXME: Тут str, а не Date.
 
 
 def get_random_dict_key(dictionary: dict):
@@ -101,10 +105,9 @@ class MainWindow(tk.Tk):
     # Обработчики нажатий кнопок
     def __button_select_date_click(self) -> None:
         self.select_date_window = SelectDateWindow()
-        self.user_date = self.select_date_window.get_date()
-        logging.debug(f'{self.user_date=}')
 
     def __btn_start_test_click(self) -> None:
+        logging.debug(f'{user_selected_date=}')
         self.test_window = TestWindow(data_handler=self.data_handler,
                                       tests_time=self.radiobtn_tests_time_var.get(),
                                       tests_lang=self.radiobtn_tests_lang_var.get())
@@ -119,6 +122,8 @@ class SelectDateWindow(tk.Tk):
         super().__init__()
 
         self.title('Выбор даты')
+
+        self.user_selected_date: Date | None = None
 
         self.__define_internal_vars()
         self.__define_widgets()
@@ -153,9 +158,8 @@ class SelectDateWindow(tk.Tk):
 Пожалуйста, введите дату в формате \"дд.мм.гггг\"
 Например, 01.01.2025 или 08.11.2020""")
             return
-
-    def get_date(self):
-        ...
+        global user_selected_date
+        user_selected_date = user_date
 
 
 class TestWindow(tk.Tk):
