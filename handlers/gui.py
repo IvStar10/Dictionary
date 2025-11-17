@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.DEBUG)
 user_selected_date: Date | None = None  # FIXME: Тут str, а не Date.
 
 
+# FIXME: Что сия функция забыла в gui??? Переместить в data.py!
 def get_random_dict_key(dictionary: dict):
     # TODO: Пожалуй, стоит генерировать последовательность через random.sample.
     return choice(list(dictionary))
@@ -133,6 +134,7 @@ class SelectDateWindow(tk.Tk):
         self.user_date = tk.StringVar()
 
     def __define_widgets(self):
+        # TODO: Добавить бы кнопочку вроде "Выбрать сегодняшнюю дату".
         self.label_instruction = ttk.Label(
             self, text='Введите дату в формате "дд.мм.гггг"')
         self.entry_date = ttk.Entry(self, textvariable=self.user_date)

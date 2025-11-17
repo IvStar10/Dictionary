@@ -14,13 +14,21 @@ class JSON:
     def __init__(self, path: str) -> None:
         self._path = path
 
-    def get_words(self, date: str) -> dict[str, str]:
+    def get_words(self, date: str) -> dict[str, str]:  # TODO: date: Date
+        """FIXME:
+        Тут может быть такой баг:
+        В нашем json`чике есть неформатированая дата.
+        Пользователь вводит как раз-таки эту дату, мы её форматируем,
+        обращаемся к json`у по ключу, НО оп - такого ключа нет!
+        Я к чему - надо сделать метод, который форматировал бы даты в json`е.
+        Или (а может быть, обязательно) переписать этот метод.
+        """
         json = self.__load_json()
         words = json[date]
         return words
 
     def get_all_words(self) -> dict[str, str]:
-        # Кстати, при объединении словарей несколько одинаковых ключей превращаются в один.
+        # NOTE: Кстати, при объединении словарей несколько одинаковых ключей превращаются в один.
         json: dict = self.__load_json()
         words = {}
 
@@ -67,8 +75,19 @@ class ParseDate:
         except AttributeError:
             raise InvalidDateError
 
-        result = Date(day, month, year)
+        result = self.format_date(Date(day, month, year))
         return result
+
+    def format_date(self, old_date: Date) -> Date:  # UNTESTED
+        # Забиваем нулями, чтоб довести до "дд.мм.гггг".
+        new_day = old_date.day.zfill(2)
+        new_month = old_date.month.zfill(2)
+        new_year = old_date.year.zfill(4)
+        return Date(new_day, new_month, new_year)
+
+    def date_to_str(self, date: Date) -> str:  # UNTESTED
+        formated_date = self.format_date(date)
+        return f'{formated_date.day}.{formated_date.month}.{formated_date.year}'
 
 
 if __name__ == "__main__":
