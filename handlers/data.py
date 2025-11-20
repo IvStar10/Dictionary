@@ -10,6 +10,10 @@ class InvalidDateError(Exception):
     pass
 
 
+class DateNotFoundError(Exception):
+    pass
+
+
 class JSON:
     def __init__(self, path: str) -> None:
         self._path = path
@@ -24,7 +28,11 @@ class JSON:
         Или (а может быть, обязательно) переписать этот метод.
         """
         json = self.__load_json()
-        words = json[date]
+        try:
+            words = json[date]
+        except KeyError:
+            raise DateNotFoundError(f'Не найдена дата "{date}".')  # UNTESTED
+
         return words
 
     def get_all_words(self) -> dict[str, str]:

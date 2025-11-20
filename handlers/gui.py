@@ -7,7 +7,7 @@ from tkinter import ttk
 from tkinter.messagebox import showerror
 
 from .data import JSON
-from .data import ParseDate, Date, InvalidDateError
+from .data import ParseDate, Date, InvalidDateError, DateNotFoundError
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -162,6 +162,8 @@ class SelectDateWindow(tk.Tk):
             return
         global user_selected_date
         user_selected_date = user_date
+        # Чтоб пользователь сам не закрывал.
+        self.destroy()
 
 
 class TestWindow(tk.Tk):
@@ -220,9 +222,17 @@ class TestWindow(tk.Tk):
                 words: dict = self.data_handler.get_all_words()
                 logging.debug(f'{words=}')
             case 'fixed':
-                # TODO: Здесь надо будет создавать окно с выбором даты.
-                logging.error("Вызов нереализованной функции.")
-                self.destroy()
+                select_date_window = SelectDateWindow()
+                select_date_window.wait_window()
+                # Создаём локальную переменную, чтоб случайно не изменить глобальную.
+                date = user_selected_date
+                try:
+                    words: dict = self.data_handler.get_words(date)
+                except DateNotFoundError as e:
+                    showerror(e)  # FIXME: Текст ошибки не отображается.
+                    logging.error(e)
+                    self.destroy()
+                    raise
 
         match self.tests_lang:
             case 1:
