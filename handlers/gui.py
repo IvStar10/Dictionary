@@ -227,9 +227,10 @@ class TestWindow(tk.Tk):
                 # Создаём локальную переменную, чтоб случайно не изменить глобальную.
                 date = user_selected_date
                 try:
+                    # FIXME: date официально Date | None, а не str.
                     words: dict = self.data_handler.get_words(date)
                 except DateNotFoundError as e:
-                    showerror(e)  # FIXME: Текст ошибки не отображается.
+                    showerror("Дата не найдена", str(e))
                     logging.error(e)
                     self.destroy()
                     raise

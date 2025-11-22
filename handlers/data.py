@@ -31,7 +31,8 @@ class JSON:
         try:
             words = json[date]
         except KeyError:
-            raise DateNotFoundError(f'Не найдена дата "{date}".')  # UNTESTED
+            raise DateNotFoundError(
+                f'Не найдено ни одного слова за дату "{date}".')  # UNTESTED
 
         return words
 
