@@ -1,16 +1,15 @@
 import json
 import re
 from collections import namedtuple
-from random import choice
+from random import sample
 
 
 Date = namedtuple('Date', ['day', 'month', 'year'])
 
 
-# FIXME: Что сия функция забыла в gui??? Переместить в data.py!
-def get_random_dict_key(dictionary: dict):
-    # TODO: Пожалуй, стоит генерировать последовательность через random.sample.
-    return choice(list(dictionary))
+def gen_random_dict_key(dictionary: dict):
+    for rand_key in sample(list(dictionary), len(dictionary)):
+        yield rand_key
 
 
 class InvalidDateError(Exception):
@@ -39,7 +38,7 @@ class JSON:
             words = json[date]
         except KeyError:
             raise DateNotFoundError(
-                f'Не найдено ни одного слова за дату "{date}".')  # UNTESTED
+                f'Не найдено ни одного слова за дату "{date}".')
 
         return words
 

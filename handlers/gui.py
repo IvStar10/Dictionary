@@ -3,9 +3,9 @@ import logging
 
 import tkinter as tk
 from tkinter import ttk
-from tkinter.messagebox import showerror
+from tkinter.messagebox import showerror, showinfo
 
-from .data import JSON, get_random_dict_key
+from .data import JSON, gen_random_dict_key
 from .data import ParseDate, Date, InvalidDateError, DateNotFoundError
 
 
@@ -102,9 +102,9 @@ class MainWindow(tk.Tk):
 
     def __btn_start_test_click(self) -> None:
         logging.debug(f'{user_selected_date=}')
-        self.test_window = TestWindow(data_handler=self.data_handler,
-                                      tests_time=self.radiobtn_tests_time_var.get(),
-                                      tests_lang=self.radiobtn_tests_lang_var.get())
+        test_window = TestWindow(data_handler=self.data_handler,
+                                 tests_time=self.radiobtn_tests_time_var.get(),
+                                 tests_lang=self.radiobtn_tests_lang_var.get())
 
 
 class AddWordWindow(tk.Tk):
@@ -161,6 +161,7 @@ class SelectDateWindow(tk.Tk):
 
 class TestWindow(tk.Tk):
     def __init__(self, *, data_handler: JSON, tests_time, tests_lang):
+        # TODO: Объявить ВСЕ поля в этом конструкторе.
         # Прокидываем обработчики и настройки.
         self.data_handler = data_handler
         self.tests_time = tests_time
@@ -174,7 +175,8 @@ class TestWindow(tk.Tk):
 
         self.__form_words_dict()
 
-        self.current_word = get_random_dict_key(self.words)
+        self.get_next_random_dict_key = gen_random_dict_key(self.words)
+        self.current_word = next(self.get_next_random_dict_key)
         self.label_word.configure(text=self.current_word)
 
     def __define_internal_vars(self):
@@ -215,6 +217,7 @@ class TestWindow(tk.Tk):
                 words: dict = self.data_handler.get_all_words()
                 logging.debug(f'{words=}')
             case 'fixed':
+                # FIXME: В итоге создаётся три окна, что раздражает. Эти match-case должны быть в MainWindow.
                 select_date_window = SelectDateWindow()
                 select_date_window.wait_window()
                 # Создаём локальную переменную, чтоб случайно не изменить глобальную.
@@ -267,8 +270,15 @@ class TestWindow(tk.Tk):
         # Сбрасываем поле ввода
         self.entry_translating.delete(0, last='end')
 
-        # Берём случайное слово
-        self.current_word = get_random_dict_key(self.words)
+        try:
+            # Берём случайное слово
+            self.current_word = next(self.get_next_random_dict_key)
+        except StopIteration:
+            showinfo('Тест завершён', """Результаты:
+... правильных слов, ... неправильных слов.""")  # TODO: Добавить вывод результатов.
+            self.destroy()
+            logging.info('Тесты завершены, окно с тестами закрыто.')
+            return
 
         # Меняем надписи
         self.label_word.configure(text=self.current_word)
