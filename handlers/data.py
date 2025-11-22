@@ -1,9 +1,16 @@
 import json
 import re
 from collections import namedtuple
+from random import choice
 
 
 Date = namedtuple('Date', ['day', 'month', 'year'])
+
+
+# FIXME: Что сия функция забыла в gui??? Переместить в data.py!
+def get_random_dict_key(dictionary: dict):
+    # TODO: Пожалуй, стоит генерировать последовательность через random.sample.
+    return choice(list(dictionary))
 
 
 class InvalidDateError(Exception):
@@ -21,7 +28,7 @@ class JSON:
     def get_words(self, date: str) -> dict[str, str]:  # TODO: date: Date
         """FIXME:
         Тут может быть такой баг:
-        В нашем json`чике есть неформатированая дата.
+        В нашем json`чике есть неформатированная дата.
         Пользователь вводит как раз-таки эту дату, мы её форматируем,
         обращаемся к json`у по ключу, НО оп - такого ключа нет!
         Я к чему - надо сделать метод, который форматировал бы даты в json`е.

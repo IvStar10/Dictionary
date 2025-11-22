@@ -1,12 +1,11 @@
 # TODO: Навести порядок в логах (ненужные убрать, нужные добавить), а то сейчас бардак творится!
 import logging
-from random import choice
 
 import tkinter as tk
 from tkinter import ttk
 from tkinter.messagebox import showerror
 
-from .data import JSON
+from .data import JSON, get_random_dict_key
 from .data import ParseDate, Date, InvalidDateError, DateNotFoundError
 
 
@@ -15,12 +14,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Знаю, использовать глобальную переменную для этих целей не есть хорошо...
 user_selected_date: Date | None = None  # FIXME: Тут str, а не Date.
-
-
-# FIXME: Что сия функция забыла в gui??? Переместить в data.py!
-def get_random_dict_key(dictionary: dict):
-    # TODO: Пожалуй, стоит генерировать последовательность через random.sample.
-    return choice(list(dictionary))
 
 
 class MainWindow(tk.Tk):
