@@ -64,11 +64,11 @@ class JSON:
         self.__write_to_json(data=json)
 
     def __load_json(self) -> dict[str, dict[str, str]]:
-        with open(self._path, 'r') as file:
+        with open(self._path, 'r', encoding='utf-8') as file:
             return json.load(file)
 
     def __write_to_json(self, data: dict[str, dict[str, str]]) -> None:
-        with open(self._path, 'w') as file:
+        with open(self._path, 'w', encoding='utf-8') as file:
             json.dump(data, file)
 
     def test(self):
@@ -101,8 +101,8 @@ class ParseDate:
         return Date(new_day, new_month, new_year)
 
     def date_to_str(self, date: Date) -> str:  # UNTESTED
-        formated_date = self.format_date(date)
-        return f'{formated_date.day}.{formated_date.month}.{formated_date.year}'
+        formatted_date = self.format_date(date)
+        return f'{formatted_date.day}.{formatted_date.month}.{formatted_date.year}'
 
 
 if __name__ == "__main__":

@@ -1,4 +1,3 @@
-# FIXME: На windows вместо кириллицы - кракозябры.
 from handlers.gui import MainWindow
 from handlers.data import JSON
 
