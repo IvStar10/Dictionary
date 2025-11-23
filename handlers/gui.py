@@ -101,10 +101,40 @@ class MainWindow(tk.Tk):
         self.select_date_window = SelectDateWindow()
 
     def __btn_start_test_click(self) -> None:
-        logging.debug(f'{user_selected_date=}')
+        tests_time = self.radiobtn_tests_time_var.get()
+        tests_lang = self.radiobtn_tests_lang_var.get()
+
+        # TODO: Пожалуй, это стоит перенести в data.py
+        # Здесь мы формируем словарь со словами, которые будем проверять
+        # в зависимости от времени.
+        match tests_time:
+            case 'all':
+                words: dict = self.data_handler.get_all_words()
+                logging.debug(f'{words=}')
+            case 'fixed':
+                select_date_window = SelectDateWindow()
+                select_date_window.wait_window()
+                # Создаём локальную переменную, чтоб случайно не изменить глобальную.
+                date = user_selected_date
+                try:
+                    # FIXME: date официально Date | None, а не str.
+                    words: dict = self.data_handler.get_words(date)
+                except DateNotFoundError as e:
+                    showerror("Дата не найдена", str(e))
+                    logging.error(e)
+                    return
+
+        match tests_lang:
+            case 1:
+                # Ничего не делаем, слова и так в правильном порядке.
+                logging.debug("Не перевёрнутый словарь: %s", (words))
+            case 2:
+                # Переворачиваем словарь.
+                words = {value: key for key, value in words.items()}
+                logging.debug("Перевёрнутый словарь: %s", (words))
+
         test_window = TestWindow(data_handler=self.data_handler,
-                                 tests_time=self.radiobtn_tests_time_var.get(),
-                                 tests_lang=self.radiobtn_tests_lang_var.get())
+                                 words=words)
 
 
 class AddWordWindow(tk.Tk):
@@ -154,18 +184,17 @@ class SelectDateWindow(tk.Tk):
 Например, 01.01.2025 или 08.11.2020""")
             return
         global user_selected_date
+        # FIXME: date официально Date | None, а не str.
         user_selected_date = user_date
         # Чтоб пользователь сам не закрывал.
         self.destroy()
 
 
 class TestWindow(tk.Tk):
-    def __init__(self, *, data_handler: JSON, tests_time, tests_lang):
-        # TODO: Объявить ВСЕ поля в этом конструкторе.
+    def __init__(self, *, data_handler: JSON, words: dict):
         # Прокидываем обработчики и настройки.
         self.data_handler = data_handler
-        self.tests_time = tests_time
-        self.tests_lang = tests_lang
+        self.words = words
 
         super().__init__()
 
@@ -173,10 +202,10 @@ class TestWindow(tk.Tk):
         self.__define_widgets()
         self.__pack_widgets()
 
-        self.__form_words_dict()
-
+        # Создаём новый генератор, чтобы была именно последовательность.
         self.get_next_random_dict_key = gen_random_dict_key(self.words)
         self.current_word = next(self.get_next_random_dict_key)
+        # Выводим первое слово.
         self.label_word.configure(text=self.current_word)
 
     def __define_internal_vars(self):
@@ -208,38 +237,6 @@ class TestWindow(tk.Tk):
         self.label_true_translating.pack()
 
         self.button_next.pack(anchor='e')
-
-    def __form_words_dict(self):
-        match self.tests_time:
-            # Здесь мы формируем словарь со словами, которые будем проверять
-            # в зависимости от времени.
-            case 'all':
-                words: dict = self.data_handler.get_all_words()
-                logging.debug(f'{words=}')
-            case 'fixed':
-                # FIXME: В итоге создаётся три окна, что раздражает. Эти match-case должны быть в MainWindow.
-                select_date_window = SelectDateWindow()
-                select_date_window.wait_window()
-                # Создаём локальную переменную, чтоб случайно не изменить глобальную.
-                date = user_selected_date
-                try:
-                    # FIXME: date официально Date | None, а не str.
-                    words: dict = self.data_handler.get_words(date)
-                except DateNotFoundError as e:
-                    showerror("Дата не найдена", str(e))
-                    logging.error(e)
-                    self.destroy()
-                    raise
-
-        match self.tests_lang:
-            case 1:
-                self.words = words
-                # Ничего не делаем, слова и так в правильном порядке.
-                logging.debug("Не перевёрнутый словарь: %s", (self.words))
-            case 2:
-                # Переворачиваем словарь.
-                self.words = {value: key for key, value in words.items()}
-                logging.debug("Перевёрнутый словарь: %s", (self.words))
 
     def __button_check_click(self):
         logging.info('Нажата кнопка "Проверить"')
