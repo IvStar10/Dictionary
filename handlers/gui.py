@@ -196,6 +196,10 @@ class TestWindow(tk.Tk):
         self.data_handler = data_handler
         self.words = words
 
+        # Счетчики кол-ва правильно и неправильно угаданных пользователем слов.
+        self._correct_words_counter: int = 0
+        self._incorrect_words_counter: int = 0
+
         super().__init__()
 
         self.__define_internal_vars()
@@ -249,8 +253,10 @@ class TestWindow(tk.Tk):
         logging.debug(f'{user_translating=}')
 
         if user_translating == current_translating:
+            self._correct_words_counter += 1
             self.label_result.configure(text="Правильно!", foreground='green')
         else:
+            self._incorrect_words_counter += 1
             self.label_result.configure(
                 text="Неправильно :(", foreground='red')
 
@@ -271,9 +277,9 @@ class TestWindow(tk.Tk):
             # Берём случайное слово
             self.current_word = next(self.get_next_random_dict_key)
         except StopIteration:
-            showinfo('Тест завершён', """Результаты:
-... правильных слов, ... неправильных слов.""")  # TODO: Добавить вывод результатов.
             self.destroy()
+            showinfo('Тест завершён', f"""Результаты:
+{self._correct_words_counter} правильных слов, {self._incorrect_words_counter} неправильных слов.""")
             logging.info('Тесты завершены, окно с тестами закрыто.')
             return
 
