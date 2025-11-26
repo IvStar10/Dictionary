@@ -59,6 +59,9 @@ class MainWindow(tk.Tk):
         # На вкладке "Словарь"
         self.button_select_date = ttk.Button(
             master=self.tab_dictionary, text='Выбрать дату', command=self.__button_select_date_click)
+        self.btn_test_add_word_window = ttk.Button(
+            master=self.tab_dictionary, text='open AddWordWindow',
+            command=self.__btn_test_add_word_window)  # DEBUG
 
         # На вкладке "Тесты"
 
@@ -86,6 +89,7 @@ class MainWindow(tk.Tk):
 
     def __pack_widgets(self):
         self.button_select_date.pack()
+        self.btn_test_add_word_window.pack()
 
         self.label_test_time.pack()
         self.radiobtn_all_time.pack()
@@ -99,6 +103,9 @@ class MainWindow(tk.Tk):
     # Обработчики нажатий кнопок
     def __button_select_date_click(self) -> None:
         self.select_date_window = SelectDateWindow()
+
+    def __btn_test_add_word_window(self) -> None:
+        self.add_word_window = AddWordWindow()
 
     def __btn_start_test_click(self) -> None:
         tests_time = self.radiobtn_tests_time_var.get()
@@ -138,7 +145,34 @@ class MainWindow(tk.Tk):
 
 
 class AddWordWindow(tk.Tk):
-    ...
+    def __init__(self):
+        super().__init__()
+
+        self.title('Добавление слова')
+
+        self.__define_internal_vars()
+        self.__define_widgets()
+        self.__pack_widgets()
+
+    def __define_internal_vars(self):
+        ...
+
+    def __define_widgets(self):
+        self.label_word = ttk.Label(self, text='Слово:')
+        self.entry_word = ttk.Entry(self)
+        self.label_translating = ttk.Label(self, text='Перевод:')
+        self.entry_translating = ttk.Entry(self)
+        self.button_add_a_word = ttk.Button(self, text='Добавить', command=self.__add_word)
+
+    def __pack_widgets(self):
+        self.label_word.pack(anchor='w')
+        self.entry_word.pack()
+        self.label_translating.pack(anchor='w')
+        self.entry_translating.pack()
+        self.button_add_a_word.pack(anchor='e')
+
+    def __add_word(self):
+        ...
 
 
 class SelectDateWindow(tk.Tk):
