@@ -1,5 +1,6 @@
 # TODO: Навести порядок в логах (ненужные убрать, нужные добавить), а то сейчас бардак творится!
 import logging
+from datetime import datetime
 
 import tkinter as tk
 from tkinter import ttk
@@ -17,8 +18,9 @@ user_selected_date: Date | None = None  # FIXME: Тут str, а не Date.
 
 
 class MainWindow(tk.Tk):
-    def __init__(self, *, data_handler: JSON):
+    def __init__(self, *, data_handler: JSON, date_parser: ParseDate):
         self.data_handler = data_handler
+        self.date_parser = date_parser
 
         super().__init__()
 
@@ -105,7 +107,8 @@ class MainWindow(tk.Tk):
         self.select_date_window = SelectDateWindow()
 
     def __btn_test_add_word_window(self) -> None:
-        self.add_word_window = AddWordWindow()
+        self.add_word_window = AddWordWindow(data_handler=self.data_handler,
+                                             date_parser=self.date_parser)
 
     def __btn_start_test_click(self) -> None:
         tests_time = self.radiobtn_tests_time_var.get()
@@ -145,8 +148,11 @@ class MainWindow(tk.Tk):
 
 
 class AddWordWindow(tk.Tk):
-    def __init__(self):
+    def __init__(self, *, data_handler: JSON, date_parser: ParseDate):
         super().__init__()
+
+        self.data_handler = data_handler
+        self.date_parser = date_parser
 
         self.title('Добавление слова')
 
@@ -172,7 +178,14 @@ class AddWordWindow(tk.Tk):
         self.button_add_a_word.pack(anchor='e')
 
     def __add_word(self):
-        ...
+        # today: Date = self.date_parser.parse(str(datetime.now().strftime("%d.%m.%Y")))
+        # logging.debug(f'{today=}')
+        # today_str: str = self.date_parser.date_to_str(today)
+        today_str: str = str(datetime.now().strftime("%d.%m.%Y"))
+        logging.debug(f'{today_str=}')
+        self.data_handler.add_word(today_str, self.entry_word.get(),
+                                   self.entry_translating.get())
+        logging.debug(self.data_handler.get_all_words())
 
 
 class SelectDateWindow(tk.Tk):
@@ -205,10 +218,9 @@ class SelectDateWindow(tk.Tk):
 
     def __button_ok_click(self):
         logging.info('Кнопка "Выбрать" (на окне с выбором даты) нажата.')
-        date_parser = ParseDate()
         user_date: str = self.entry_date.get()
         try:
-            parsed_date: Date = date_parser.parse(user_date)
+            parsed_date: Date = self.date_parser.parse(user_date)
         except InvalidDateError:
             logging.error(
                 f'Пользователь ввёл неправильную дату, а именно - {user_date}')
