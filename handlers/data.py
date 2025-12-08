@@ -1,9 +1,11 @@
 import json
 import re
+import logging
 from collections import namedtuple
 from random import sample
 
 
+logging.basicConfig(level=logging.DEBUG)
 Date = namedtuple('Date', ['day', 'month', 'year'])
 
 
@@ -62,6 +64,7 @@ class JSON:
 
         # Пишем в json.
         self.__write_to_json(data=json)
+        logging.info(f"В {self._path} добавлено новое слово.")
 
     def __load_json(self) -> dict[str, dict[str, str]]:
         with open(self._path, 'r', encoding='utf-8') as file:
@@ -71,7 +74,7 @@ class JSON:
         with open(self._path, 'w', encoding='utf-8') as file:
             json.dump(data, file)
 
-    def test(self):
+    def test(self):  # DEBUG
         return self.get_all_words()
 
 
@@ -89,7 +92,7 @@ class ParseDate:
             year = found_date.group(3)  # type: ignore
         # Если found_date - None, то found_date.group() вызовет ошибку AttributeError.
         except AttributeError:
-            raise InvalidDateError
+            raise InvalidDateError(f'Date "{date}" is invalid.')
 
         result = self.format_date(Date(day, month, year))
         return result

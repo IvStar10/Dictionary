@@ -1,5 +1,6 @@
 # TODO: Навести порядок в логах (ненужные убрать, нужные добавить), а то сейчас бардак творится!
 import logging
+from datetime import datetime
 
 import tkinter as tk
 from tkinter import ttk
@@ -17,8 +18,9 @@ user_selected_date: Date | None = None  # FIXME: Тут str, а не Date.
 
 
 class MainWindow(tk.Tk):
-    def __init__(self, *, data_handler: JSON):
+    def __init__(self, *, data_handler: JSON, date_parser: ParseDate):
         self.data_handler = data_handler
+        self.date_parser = date_parser
 
         super().__init__()
 
@@ -49,19 +51,26 @@ class MainWindow(tk.Tk):
         self.notebook.pack()
 
     def __define_frames(self):
+        # На вкладке "Словарь"
+        self.frame_dictionary_date = ttk.Frame(master=self.tab_dictionary)
+        self.frame_dictionary_show_as = ttk.Frame(master=self.tab_dictionary)
         # На вкладке "Тесты"
         self.frame_tests_time = ttk.Frame(master=self.tab_tests)
         self.frame_tests_lang = ttk.Frame(master=self.tab_tests)
-        self.frame_tests_time.pack()
-        self.frame_tests_lang.pack()
 
     def __define_widgets(self):
         # На вкладке "Словарь"
+
+        self.add_word_button = ttk.Button(
+            master=self.tab_dictionary, text='Добавить слово',
+            command=self.__add_word_button_click)
+
+        # На рамке "date"
+        self.label_date = ttk.Label(master=self.frame_dictionary_date, text='Выбраная дата: ...')
         self.button_select_date = ttk.Button(
-            master=self.tab_dictionary, text='Выбрать дату', command=self.__button_select_date_click)
-        self.btn_test_add_word_window = ttk.Button(
-            master=self.tab_dictionary, text='open AddWordWindow',
-            command=self.__btn_test_add_word_window)  # DEBUG
+            master=self.frame_dictionary_date, text='Выбрать дату', command=self.__button_select_date_click)
+        # На рамке "show_as"
+        ...
 
         # На вкладке "Тесты"
 
@@ -87,10 +96,22 @@ class MainWindow(tk.Tk):
             master=self.tab_tests, text='Начать тест',
             command=self.__btn_start_test_click)
 
-    def __pack_widgets(self):
-        self.button_select_date.pack()
-        self.btn_test_add_word_window.pack()
+    def __pack_frames(self):
+        self.frame_dictionary_date.pack(anchor='w')
+        self.frame_dictionary_show_as.pack(anchor='w')
+        self.frame_tests_time.pack()
+        self.frame_tests_lang.pack()
 
+    def __pack_widgets(self):
+        # На вкладке "Словарь"
+        self.add_word_button.pack(anchor='w')
+
+        self.__pack_frames()
+
+        self.label_date.pack(anchor='w')
+        self.button_select_date.pack(anchor='w')
+
+        # На вкладке "Тесты"
         self.label_test_time.pack()
         self.radiobtn_all_time.pack()
         self.radiobtn_fixed_time.pack()
@@ -104,8 +125,9 @@ class MainWindow(tk.Tk):
     def __button_select_date_click(self) -> None:
         self.select_date_window = SelectDateWindow()
 
-    def __btn_test_add_word_window(self) -> None:
-        self.add_word_window = AddWordWindow()
+    def __add_word_button_click(self) -> None:
+        self.add_word_window = AddWordWindow(data_handler=self.data_handler,
+                                             date_parser=self.date_parser)
 
     def __btn_start_test_click(self) -> None:
         tests_time = self.radiobtn_tests_time_var.get()
@@ -145,8 +167,11 @@ class MainWindow(tk.Tk):
 
 
 class AddWordWindow(tk.Tk):
-    def __init__(self):
+    def __init__(self, *, data_handler: JSON, date_parser: ParseDate):
         super().__init__()
+
+        self.data_handler = data_handler
+        self.date_parser = date_parser
 
         self.title('Добавление слова')
 
@@ -172,7 +197,14 @@ class AddWordWindow(tk.Tk):
         self.button_add_a_word.pack(anchor='e')
 
     def __add_word(self):
-        ...
+        # today: Date = self.date_parser.parse(str(datetime.now().strftime("%d.%m.%Y")))
+        # logging.debug(f'{today=}')
+        # today_str: str = self.date_parser.date_to_str(today)
+        today_str: str = str(datetime.now().strftime("%d.%m.%Y"))
+        logging.debug(f'{today_str=}')
+        self.data_handler.add_word(today_str, self.entry_word.get(),
+                                   self.entry_translating.get())
+        logging.debug(self.data_handler.get_all_words())
 
 
 class SelectDateWindow(tk.Tk):
@@ -205,10 +237,9 @@ class SelectDateWindow(tk.Tk):
 
     def __button_ok_click(self):
         logging.info('Кнопка "Выбрать" (на окне с выбором даты) нажата.')
-        date_parser = ParseDate()
         user_date: str = self.entry_date.get()
         try:
-            parsed_date: Date = date_parser.parse(user_date)
+            parsed_date: Date = self.date_parser.parse(user_date)
         except InvalidDateError:
             logging.error(
                 f'Пользователь ввёл неправильную дату, а именно - {user_date}')
