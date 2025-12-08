@@ -51,19 +51,26 @@ class MainWindow(tk.Tk):
         self.notebook.pack()
 
     def __define_frames(self):
+        # На вкладке "Словарь"
+        self.frame_dictionary_date = ttk.Frame(master=self.tab_dictionary)
+        self.frame_dictionary_show_as = ttk.Frame(master=self.tab_dictionary)
         # На вкладке "Тесты"
         self.frame_tests_time = ttk.Frame(master=self.tab_tests)
         self.frame_tests_lang = ttk.Frame(master=self.tab_tests)
-        self.frame_tests_time.pack()
-        self.frame_tests_lang.pack()
 
     def __define_widgets(self):
         # На вкладке "Словарь"
+
+        self.add_word_button = ttk.Button(
+            master=self.tab_dictionary, text='Добавить слово',
+            command=self.__add_word_button_click)
+
+        # На рамке "date"
+        self.label_date = ttk.Label(master=self.frame_dictionary_date, text='Выбраная дата: ...')
         self.button_select_date = ttk.Button(
-            master=self.tab_dictionary, text='Выбрать дату', command=self.__button_select_date_click)
-        self.btn_test_add_word_window = ttk.Button(
-            master=self.tab_dictionary, text='open AddWordWindow',
-            command=self.__btn_test_add_word_window)  # DEBUG
+            master=self.frame_dictionary_date, text='Выбрать дату', command=self.__button_select_date_click)
+        # На рамке "show_as"
+        ...
 
         # На вкладке "Тесты"
 
@@ -89,10 +96,22 @@ class MainWindow(tk.Tk):
             master=self.tab_tests, text='Начать тест',
             command=self.__btn_start_test_click)
 
-    def __pack_widgets(self):
-        self.button_select_date.pack()
-        self.btn_test_add_word_window.pack()
+    def __pack_frames(self):
+        self.frame_dictionary_date.pack(anchor='w')
+        self.frame_dictionary_show_as.pack(anchor='w')
+        self.frame_tests_time.pack()
+        self.frame_tests_lang.pack()
 
+    def __pack_widgets(self):
+        # На вкладке "Словарь"
+        self.add_word_button.pack(anchor='w')
+
+        self.__pack_frames()
+
+        self.label_date.pack(anchor='w')
+        self.button_select_date.pack(anchor='w')
+
+        # На вкладке "Тесты"
         self.label_test_time.pack()
         self.radiobtn_all_time.pack()
         self.radiobtn_fixed_time.pack()
@@ -106,7 +125,7 @@ class MainWindow(tk.Tk):
     def __button_select_date_click(self) -> None:
         self.select_date_window = SelectDateWindow()
 
-    def __btn_test_add_word_window(self) -> None:
+    def __add_word_button_click(self) -> None:
         self.add_word_window = AddWordWindow(data_handler=self.data_handler,
                                              date_parser=self.date_parser)
 
