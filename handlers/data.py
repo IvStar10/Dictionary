@@ -84,9 +84,10 @@ class ParseDate:
         found_date = re.search(self._REGEXPR_DATE, date)
 
         try:
-            day = found_date.group(1)
-            month = found_date.group(2)
-            year = found_date.group(3)
+            day = found_date.group(1)  # type: ignore
+            month = found_date.group(2)  # type: ignore
+            year = found_date.group(3)  # type: ignore
+        # Если found_date - None, то found_date.group() вызовет ошибку AttributeError.
         except AttributeError:
             raise InvalidDateError
 
