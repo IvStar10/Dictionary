@@ -55,6 +55,8 @@ class JSON:
         return words
 
     def add_word(self, date: str, word: str, translating: str) -> None:
+        word = word.strip()
+        translating = translating.strip()
         json = self.__load_json()
         try:
             json[date][word] = translating
