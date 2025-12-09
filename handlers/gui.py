@@ -33,6 +33,7 @@ class MainWindow(tk.Tk):
         self.__pack_widgets()
 
     def __define_internal_vars(self):
+        self.show_as = tk.IntVar()
         self.radiobtn_tests_time_var = tk.StringVar()
         self.radiobtn_tests_lang_var = tk.IntVar()
 
@@ -70,8 +71,14 @@ class MainWindow(tk.Tk):
         self.button_select_date = ttk.Button(
             master=self.frame_dictionary_date, text='Выбрать дату', command=self.__button_select_date_click)
         # На рамке "show_as"
-        ...
-
+        self.label_show_as = ttk.Label(master=self.frame_dictionary_show_as, text="Показывать")
+        self.radiobutton_as_abc = ttk.Radiobutton(master=self.frame_dictionary_show_as, text="В алфавитном порядке",
+                                                  variable=self.show_as, value=1)
+        self.radiobutton_as_time = ttk.Radiobutton(master=self.frame_dictionary_show_as, text="В хронологическом порядке",
+                                                   variable=self.show_as, value=2)
+        self.radiobutton_by_fixed_time = ttk.Radiobutton(master=self.frame_dictionary_show_as, text="За определённое время",
+                                                   variable=self.show_as, value=3)
+        self.treeview_words = ttk.Treeview(master=self.tab_dictionary)
         # На вкладке "Тесты"
 
         # На рамке "time"
@@ -106,10 +113,15 @@ class MainWindow(tk.Tk):
         # На вкладке "Словарь"
         self.add_word_button.pack(anchor='w')
 
-        self.__pack_frames()
+        self.__pack_frames()  # Все рамки.
 
         self.label_date.pack(anchor='w')
         self.button_select_date.pack(anchor='w')
+        self.label_show_as.pack(anchor='w')
+        self.radiobutton_as_abc.pack(anchor='w')
+        self.radiobutton_as_time.pack(anchor='w')
+        self.radiobutton_by_fixed_time.pack(anchor='w')
+        self.treeview_words.pack()
 
         # На вкладке "Тесты"
         self.label_test_time.pack()
