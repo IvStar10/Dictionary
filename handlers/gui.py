@@ -123,7 +123,8 @@ class MainWindow(tk.Tk):
 
     # Обработчики нажатий кнопок
     def __button_select_date_click(self) -> None:
-        self.select_date_window = SelectDateWindow()
+        self.select_date_window = SelectDateWindow(data_handler=self.data_handler,
+                                                   date_parser=self.date_parser)
 
     def __add_word_button_click(self) -> None:
         self.add_word_window = AddWordWindow(data_handler=self.data_handler,
@@ -208,8 +209,10 @@ class AddWordWindow(tk.Tk):
 
 
 class SelectDateWindow(tk.Tk):
-    def __init__(self):
+    def __init__(self, *, data_handler: JSON, date_parser: ParseDate):
         super().__init__()
+        self.data_handler = data_handler
+        self.date_parser = date_parser
 
         self.title('Выбор даты')
 
