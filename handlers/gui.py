@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 # Знаю, использовать глобальную переменную для этих целей не есть хорошо...
-user_selected_date: Date | None = None  # FIXME: Тут str, а не Date.
+user_selected_date: Date | None = None
 
 
 class MainWindow(tk.Tk):
@@ -67,17 +67,19 @@ class MainWindow(tk.Tk):
             command=self.__add_word_button_click)
 
         # На рамке "date"
-        self.label_date = ttk.Label(master=self.frame_dictionary_date, text='Выбраная дата: ...')
+        self.label_date = ttk.Label(
+            master=self.frame_dictionary_date, text='Выбраная дата: ...')
         self.button_select_date = ttk.Button(
             master=self.frame_dictionary_date, text='Выбрать дату', command=self.__button_select_date_click)
         # На рамке "show_as"
-        self.label_show_as = ttk.Label(master=self.frame_dictionary_show_as, text="Показывать")
+        self.label_show_as = ttk.Label(
+            master=self.frame_dictionary_show_as, text="Показывать")
         self.radiobutton_as_abc = ttk.Radiobutton(master=self.frame_dictionary_show_as, text="В алфавитном порядке",
                                                   variable=self.show_as, value=1)
         self.radiobutton_as_time = ttk.Radiobutton(master=self.frame_dictionary_show_as, text="В хронологическом порядке",
                                                    variable=self.show_as, value=2)
         self.radiobutton_by_fixed_time = ttk.Radiobutton(master=self.frame_dictionary_show_as, text="За определённое время",
-                                                   variable=self.show_as, value=3)
+                                                         variable=self.show_as, value=3)
         self.treeview_words = ttk.Treeview(master=self.tab_dictionary)
         # На вкладке "Тесты"
 
@@ -154,13 +156,14 @@ class MainWindow(tk.Tk):
                 words: dict = self.data_handler.get_all_words()
                 logging.debug(f'{words=}')
             case 'fixed':
-                select_date_window = SelectDateWindow()
+                select_date_window = SelectDateWindow(
+                    data_handler=self.data_handler, date_parser=self.date_parser)
                 select_date_window.wait_window()
                 # Создаём локальную переменную, чтоб случайно не изменить глобальную.
                 date = user_selected_date
                 try:
-                    # FIXME: date официально Date | None, а не str.
-                    words: dict = self.data_handler.get_words(date)
+                    words: dict = self.data_handler.get_words(
+                        date)  # type: ignore
                 except DateNotFoundError as e:
                     showerror("Дата не найдена", str(e))
                     logging.error(e)
@@ -200,7 +203,8 @@ class AddWordWindow(tk.Tk):
         self.entry_word = ttk.Entry(self)
         self.label_translating = ttk.Label(self, text='Перевод:')
         self.entry_translating = ttk.Entry(self)
-        self.button_add_a_word = ttk.Button(self, text='Добавить', command=self.__add_word)
+        self.button_add_a_word = ttk.Button(
+            self, text='Добавить', command=self.__add_word)
 
     def __pack_widgets(self):
         self.label_word.pack(anchor='w')
@@ -264,8 +268,7 @@ class SelectDateWindow(tk.Tk):
 Например, 01.01.2025 или 08.11.2020""")
             return
         global user_selected_date
-        # FIXME: date официально Date | None, а не str.
-        user_selected_date = user_date
+        user_selected_date = self.date_parser.parse(user_date)
         # Чтоб пользователь сам не закрывал.
         self.destroy()
 

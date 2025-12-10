@@ -22,64 +22,6 @@ class DateNotFoundError(Exception):
     pass
 
 
-class JSON:
-    def __init__(self, path: str) -> None:
-        self._path = path
-
-    def get_words(self, date: str) -> dict[str, str]:  # TODO: date: Date
-        """FIXME:
-        Тут может быть такой баг:
-        В нашем json`чике есть неформатированная дата.
-        Пользователь вводит как раз-таки эту дату, мы её форматируем,
-        обращаемся к json`у по ключу, НО оп - такого ключа нет!
-        Я к чему - надо сделать метод, который форматировал бы даты в json`е.
-        Или (а может быть, обязательно) переписать этот метод.
-        """
-        json = self.__load_json()
-        try:
-            words = json[date]
-        except KeyError:
-            raise DateNotFoundError(
-                f'Не найдено ни одного слова за дату "{date}".')
-
-        return words
-
-    def get_all_words(self) -> dict[str, str]:
-        # NOTE: Кстати, при объединении словарей несколько одинаковых ключей превращаются в один.
-        json: dict = self.__load_json()
-        words = {}
-
-        for date in json.keys():  # Делаем один общий словарь со всеми словами.
-            words |= self.get_words(date)  # Объединяем словари.
-
-        return words
-
-    def add_word(self, date: str, word: str, translating: str) -> None:
-        word = word.strip()
-        translating = translating.strip()
-        json = self.__load_json()
-        try:
-            json[date][word] = translating
-        except KeyError:  # Если даты ещё нет,
-            json[date] = {}  # то мы её добавляем.
-            json[date][word] = translating
-
-        # Пишем в json.
-        self.__write_to_json(data=json)
-        logging.info(f"В {self._path} добавлено новое слово.")
-
-    def __load_json(self) -> dict[str, dict[str, str]]:
-        with open(self._path, 'r', encoding='utf-8') as file:
-            return json.load(file)
-
-    def __write_to_json(self, data: dict[str, dict[str, str]]) -> None:
-        with open(self._path, 'w', encoding='utf-8') as file:
-            json.dump(data, file)
-
-    def test(self):  # DEBUG
-        return self.get_all_words()
-
-
 class ParseDate:
     def __init__(self) -> None:
         self._REGEXPR_DATE = r"(\d{1,2})[\./-](\d{1,2})[\./-](\d{3,4})"
@@ -109,6 +51,74 @@ class ParseDate:
     def date_to_str(self, date: Date) -> str:  # UNTESTED
         formatted_date = self.format_date(date)
         return f'{formatted_date.day}.{formatted_date.month}.{formatted_date.year}'
+
+
+class JSON:
+    def __init__(self, path: str, date_parser: ParseDate) -> None:
+        self._path = path
+        self._date_parser = date_parser
+
+    def get_words(self, date: Date) -> dict[str, str]:
+        """FIXME:
+        Тут может быть такой баг:
+        В нашем json`чике есть неформатированная дата.
+        Пользователь вводит как раз-таки эту дату, мы её форматируем,
+        обращаемся к json`у по ключу, НО оп - такого ключа нет!
+        Я к чему - надо сделать метод, который форматировал бы даты в json`е.
+        Или (а может быть, обязательно) переписать этот метод.
+        """
+        json = self.__load_json()
+        all_words = self.__raw_dict_to_dict_with_namedtuple(json)
+        try:
+            words = all_words[date]
+        except KeyError:
+            raise DateNotFoundError(
+                f'Не найдено ни одного слова за дату "{date}".')
+
+        return words
+
+    def get_all_words(self) -> dict[str, str]:
+        # NOTE: Кстати, при объединении словарей несколько одинаковых ключей превращаются в один.
+        json: dict = self.__load_json()
+        all_words = self.__raw_dict_to_dict_with_namedtuple(json)
+        words = {}
+
+        for date in all_words.keys():  # Делаем один общий словарь со всеми словами.
+            words |= self.get_words(date)  # Объединяем словари.
+
+        return words
+
+    def add_word(self, date: str, word: str, translating: str) -> None:
+        word = word.strip()
+        translating = translating.strip()
+        json = self.__load_json()
+        try:
+            json[date][word] = translating
+        except KeyError:  # Если даты ещё нет,
+            json[date] = {}  # то мы её добавляем.
+            json[date][word] = translating
+
+        # Пишем в json.
+        self.__write_to_json(data=json)
+        logging.info(f"В {self._path} добавлено новое слово.")
+
+    def __load_json(self) -> dict[str, dict[str, str]]:
+        with open(self._path, 'r', encoding='utf-8') as file:
+            return json.load(file)
+
+    def __write_to_json(self, data: dict[str, dict[str, str]]) -> None:
+        with open(self._path, 'w', encoding='utf-8') as file:
+            json.dump(data, file)
+
+    def __raw_dict_to_dict_with_namedtuple(self, raw_dict: dict[str, dict]) -> dict[Date, dict]:
+        words: dict[Date, dict[str, str]] = {}
+        for date, content in raw_dict.items():
+            parsed_date = self._date_parser.parse(date)
+            words[parsed_date] = content
+        return words
+
+    def test(self):  # DEBUG
+        return self.get_all_words()
 
 
 if __name__ == "__main__":
