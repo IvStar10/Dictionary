@@ -4,7 +4,7 @@ from handlers.data import JSON, ParseDate
 
 def main() -> None:
     date_parser = ParseDate()
-    data_handler = JSON(path='data/test_words.json', date_parser=date_parser)
+    data_handler = JSON(path='data/words.json', date_parser=date_parser)
     root_window = MainWindow(data_handler=data_handler,
                              date_parser=date_parser)
     root_window.mainloop()
