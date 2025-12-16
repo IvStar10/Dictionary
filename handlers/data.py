@@ -73,7 +73,7 @@ class JSON:
             words = all_words[date]
         except KeyError:
             raise DateNotFoundError(
-                f'Не найдено ни одного слова за дату "{date}".')
+                f'Не найдено ни одного слова за дату "{self._date_parser.date_to_str(date)}".')
 
         return words
 
@@ -89,8 +89,8 @@ class JSON:
         return words
 
     def add_word(self, date: Date, word: str, translating: str) -> None:
-        word = word.strip()
-        translating = translating.strip()
+        word = word.strip().lower()
+        translating = translating.strip().lower()
 
         json = self.__load_json()
         words = self.__raw_dict_to_dict_with_namedtuple(json)

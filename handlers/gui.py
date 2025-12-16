@@ -325,7 +325,7 @@ class TestWindow(tk.Tk):
     def __button_check_click(self):
         logging.info('Нажата кнопка "Проверить"')
         logging.debug(self.entry_translating.get())
-        user_translating: str = self.entry_translating.get().strip()
+        user_translating: str = self.entry_translating.get().strip().lower()
 
         current_translating = self.words[self.current_word]
         logging.debug(f'{current_translating=}')
