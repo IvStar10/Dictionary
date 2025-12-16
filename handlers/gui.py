@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 # Знаю, использовать глобальную переменную для этих целей не есть хорошо...
-user_selected_date: Date | None = None
+user_selected_date: Date | None = None  # TODO: Вместо None - текущюю дату.
 
 
 class MainWindow(tk.Tk):
@@ -214,12 +214,9 @@ class AddWordWindow(tk.Tk):
         self.button_add_a_word.pack(anchor='e')
 
     def __add_word(self):
-        # today: Date = self.date_parser.parse(str(datetime.now().strftime("%d.%m.%Y")))
-        # logging.debug(f'{today=}')
-        # today_str: str = self.date_parser.date_to_str(today)
-        today_str: str = str(datetime.now().strftime("%d.%m.%Y"))
-        logging.debug(f'{today_str=}')
-        self.data_handler.add_word(today_str, self.entry_word.get(),
+        today: Date = self.date_parser.parse(str(datetime.now().strftime("%d.%m.%Y")))
+        logging.debug(f'{today=}')
+        self.data_handler.add_word(today, self.entry_word.get(),
                                    self.entry_translating.get())
         logging.debug(self.data_handler.get_all_words())
 

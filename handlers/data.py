@@ -41,14 +41,14 @@ class ParseDate:
         result = self.format_date(Date(day, month, year))
         return result
 
-    def format_date(self, old_date: Date) -> Date:  # UNTESTED
+    def format_date(self, old_date: Date) -> Date:
         # Забиваем нулями, чтоб довести до "дд.мм.гггг".
         new_day = old_date.day.zfill(2)
         new_month = old_date.month.zfill(2)
         new_year = old_date.year.zfill(4)
         return Date(new_day, new_month, new_year)
 
-    def date_to_str(self, date: Date) -> str:  # UNTESTED
+    def date_to_str(self, date: Date) -> str:
         formatted_date = self.format_date(date)
         return f'{formatted_date.day}.{formatted_date.month}.{formatted_date.year}'
 
@@ -88,18 +88,20 @@ class JSON:
 
         return words
 
-    def add_word(self, date: str, word: str, translating: str) -> None:
+    def add_word(self, date: Date, word: str, translating: str) -> None:
         word = word.strip()
         translating = translating.strip()
+
         json = self.__load_json()
+        words = self.__raw_dict_to_dict_with_namedtuple(json)
         try:
-            json[date][word] = translating
+            words[date][word] = translating
         except KeyError:  # Если даты ещё нет,
-            json[date] = {}  # то мы её добавляем.
-            json[date][word] = translating
+            words[date] = {}  # то мы её добавляем.
+            words[date][word] = translating
 
         # Пишем в json.
-        self.__write_to_json(data=json)
+        self.__write_to_json(data=self.__dict_with_namedtuple_to_raw_dict(words))
         logging.info(f"В {self._path} добавлено новое слово.")
 
     def __load_json(self) -> dict[str, dict[str, str]]:
@@ -115,6 +117,13 @@ class JSON:
         for date, content in raw_dict.items():
             parsed_date = self._date_parser.parse(date)
             words[parsed_date] = content
+        return words
+
+    def __dict_with_namedtuple_to_raw_dict(self, dict_with_namedtuple: dict[Date, dict]) -> dict[str, dict]:
+        words: dict[str, dict[str, str]] = {}
+        for date, content in dict_with_namedtuple.items():
+            str_date = self._date_parser.date_to_str(date)
+            words[str_date] = content
         return words
 
     def test(self):  # DEBUG
