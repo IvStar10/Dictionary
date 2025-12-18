@@ -110,7 +110,7 @@ class JSON:
 
     def __write_to_json(self, data: dict[str, dict[str, str]]) -> None:
         with open(self._path, 'w', encoding='utf-8') as file:
-            json.dump(data, file, ensure_ascii=False)
+            json.dump(data, file, ensure_ascii=False, indent=True)
 
     def __raw_dict_to_dict_with_namedtuple(self, raw_dict: dict[str, dict]) -> dict[Date, dict]:
         words: dict[Date, dict[str, str]] = {}
