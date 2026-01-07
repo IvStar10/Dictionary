@@ -3,15 +3,11 @@ import re
 import logging
 from collections import namedtuple
 from random import sample
+from datetime import datetime
 
 
 logging.basicConfig(level=logging.DEBUG)
 Date = namedtuple('Date', ['day', 'month', 'year'])
-
-
-def gen_random_dict_key(dictionary: dict):
-    for rand_key in sample(list(dictionary), len(dictionary)):
-        yield rand_key
 
 
 class InvalidDateError(Exception):
@@ -123,6 +119,16 @@ class JSON:
         return self.get_all_words()
 
 
+def get_today(date_parser: ParseDate) -> Date:
+    return date_parser.parse(datetime.now().strftime("%d.%m.%Y"))
+
+
+def gen_random_dict_key(dictionary: dict):
+    for rand_key in sample(list(dictionary), len(dictionary)):
+        yield rand_key
+
+
+# TODO: Это б удалить...
 if __name__ == "__main__":
     # Здесь путь считаем от data.py. В main'е будем считать от main.py.
     # json_handler = JSON(path='../data/test_words.json')

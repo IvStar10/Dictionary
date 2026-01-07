@@ -1,13 +1,19 @@
 # TODO: Навести порядок в логах (ненужные убрать, нужные добавить), а то сейчас бардак творится!
 import logging
-from datetime import datetime
 
 import tkinter as tk
 from tkinter import ttk
 from tkinter.messagebox import showerror, showinfo
 
-from .data import JSON, gen_random_dict_key
-from .data import ParseDate, Date, InvalidDateError, DateNotFoundError
+from .data import (
+    JSON,
+    ParseDate,
+    Date,
+    InvalidDateError,
+    DateNotFoundError,
+    gen_random_dict_key,
+    get_today
+)
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -149,7 +155,6 @@ class MainWindow(tk.Tk):
         tests_time = self.radiobtn_tests_time_var.get()
         tests_lang = self.radiobtn_tests_lang_var.get()
 
-        # TODO: Пожалуй, это стоит перенести в data.py
         # Здесь мы формируем словарь со словами, которые будем проверять
         # в зависимости от времени.
         match tests_time:
@@ -211,9 +216,7 @@ class AddWordWindow(tk.Tk):
         self.button_add_a_word.pack(anchor='e')
 
     def __add_word(self):
-        # TODO: Вынести это в ф-цию получения тек. даты.
-        today: Date = self.date_parser.parse(
-            str(datetime.now().strftime("%d.%m.%Y")))
+        today: Date = get_today(self.date_parser)
         logging.debug(f'{today=}')
         self.data_handler.add_word(today, self.entry_word.get(),
                                    self.entry_translating.get())
@@ -238,17 +241,19 @@ class SelectDateWindow(tk.Tk):
         self.user_date = tk.StringVar()
 
     def __define_widgets(self):
-        # TODO: Добавить бы кнопочку вроде "Выбрать сегодняшнюю дату".
         self.label_instruction = ttk.Label(
             self, text='Введите дату в формате "дд.мм.гггг"')
         self.entry_date = ttk.Entry(self, textvariable=self.user_date)
         self.button_ok = ttk.Button(
             self, text='Выбрать', command=self.__button_ok_click)
+        self.button_select_todays_date = ttk.Button(
+            self, text='Выбрать сегодняшнюю дату.', command=self.__button_select_todays_date_click)
 
     def __pack_widgets(self):
-        self.label_instruction.pack()
-        self.entry_date.pack()
-        self.button_ok.pack(anchor='e')
+        self.label_instruction.grid(row=0, column=0, columnspan=2)
+        self.entry_date.grid(row=1, column=0, columnspan=2)
+        self.button_select_todays_date.grid(row=2, column=0)
+        self.button_ok.grid(row=2, column=1)
 
     def __button_ok_click(self):
         logging.info('Кнопка "Выбрать" (на окне с выбором даты) нажата.')
@@ -268,6 +273,14 @@ class SelectDateWindow(tk.Tk):
             user_selected_date = parsed_date
             # Чтоб пользователь сам не закрывал.
             self.destroy()
+
+    def __button_select_todays_date_click(self):
+        logging.info(
+            'Кнопка "Выбрать сегодняшнюю дату." (на окне с выбором даты) нажата.')
+        global user_selected_date
+        user_selected_date = get_today(self.date_parser)
+        # Чтоб пользователь сам не закрывал.
+        self.destroy()
 
 
 class TestWindow(tk.Tk):
