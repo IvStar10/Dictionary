@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 # Знаю, использовать глобальную переменную для этих целей не есть хорошо...
-user_selected_date: Date | None = None  # TODO: Вместо None - текущюю дату.
+user_selected_date: Date | None = None  # TODO: Вместо None - текущую дату.
 
 
 class MainWindow(tk.Tk):
@@ -24,7 +24,7 @@ class MainWindow(tk.Tk):
 
         super().__init__()
 
-        self.title('')
+        self.title('Словарь')
 
         self.__define_internal_vars()
         self.__define_tabs()
@@ -81,6 +81,7 @@ class MainWindow(tk.Tk):
         self.radiobutton_by_fixed_time = ttk.Radiobutton(master=self.frame_dictionary_show_as, text="За определённое время",
                                                          variable=self.show_as, value=3)
         self.treeview_words = ttk.Treeview(master=self.tab_dictionary)
+
         # На вкладке "Тесты"
 
         # На рамке "time"
@@ -137,12 +138,12 @@ class MainWindow(tk.Tk):
 
     # Обработчики нажатий кнопок
     def __button_select_date_click(self) -> None:
-        self.select_date_window = SelectDateWindow(data_handler=self.data_handler,
-                                                   date_parser=self.date_parser)
+        SelectDateWindow(data_handler=self.data_handler,
+                         date_parser=self.date_parser)
 
     def __add_word_button_click(self) -> None:
-        self.add_word_window = AddWordWindow(data_handler=self.data_handler,
-                                             date_parser=self.date_parser)
+        AddWordWindow(data_handler=self.data_handler,
+                      date_parser=self.date_parser)
 
     def __btn_start_test_click(self) -> None:
         tests_time = self.radiobtn_tests_time_var.get()
@@ -178,8 +179,8 @@ class MainWindow(tk.Tk):
                 words = {value: key for key, value in words.items()}
                 logging.debug("Перевёрнутый словарь: %s", (words))
 
-        test_window = TestWindow(data_handler=self.data_handler,
-                                 words=words)
+        TestWindow(data_handler=self.data_handler,
+                   words=words)
 
 
 class AddWordWindow(tk.Tk):
@@ -191,12 +192,8 @@ class AddWordWindow(tk.Tk):
 
         self.title('Добавление слова')
 
-        self.__define_internal_vars()
         self.__define_widgets()
         self.__pack_widgets()
-
-    def __define_internal_vars(self):
-        ...
 
     def __define_widgets(self):
         self.label_word = ttk.Label(self, text='Слово:')
@@ -214,7 +211,9 @@ class AddWordWindow(tk.Tk):
         self.button_add_a_word.pack(anchor='e')
 
     def __add_word(self):
-        today: Date = self.date_parser.parse(str(datetime.now().strftime("%d.%m.%Y")))
+        # TODO: Вынести это в ф-цию получения тек. даты.
+        today: Date = self.date_parser.parse(
+            str(datetime.now().strftime("%d.%m.%Y")))
         logging.debug(f'{today=}')
         self.data_handler.add_word(today, self.entry_word.get(),
                                    self.entry_translating.get())
@@ -264,10 +263,11 @@ class SelectDateWindow(tk.Tk):
 Пожалуйста, введите дату в формате \"дд.мм.гггг\"
 Например, 01.01.2025 или 08.11.2020""")
             return
-        global user_selected_date
-        user_selected_date = self.date_parser.parse(user_date)
-        # Чтоб пользователь сам не закрывал.
-        self.destroy()
+        else:
+            global user_selected_date
+            user_selected_date = parsed_date
+            # Чтоб пользователь сам не закрывал.
+            self.destroy()
 
 
 class TestWindow(tk.Tk):

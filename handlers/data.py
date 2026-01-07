@@ -59,14 +59,6 @@ class JSON:
         self._date_parser = date_parser
 
     def get_words(self, date: Date) -> dict[str, str]:
-        """FIXME:
-        Тут может быть такой баг:
-        В нашем json`чике есть неформатированная дата.
-        Пользователь вводит как раз-таки эту дату, мы её форматируем,
-        обращаемся к json`у по ключу, НО оп - такого ключа нет!
-        Я к чему - надо сделать метод, который форматировал бы даты в json`е.
-        Или (а может быть, обязательно) переписать этот метод.
-        """
         json = self.__load_json()
         all_words = self.__raw_dict_to_dict_with_namedtuple(json)
         try:
@@ -101,7 +93,8 @@ class JSON:
             words[date][word] = translating
 
         # Пишем в json.
-        self.__write_to_json(data=self.__dict_with_namedtuple_to_raw_dict(words))
+        self.__write_to_json(
+            data=self.__dict_with_namedtuple_to_raw_dict(words))
         logging.info(f"В {self._path} добавлено новое слово.")
 
     def __load_json(self) -> dict[str, dict[str, str]]:
