@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 # Знаю, использовать глобальную переменную для этих целей не есть хорошо...
-user_selected_date: Date | None = None  # TODO: Вместо None - текущую дату.
+user_selected_date: Date = get_today(ParseDate())
 
 
 class MainWindow(tk.Tk):
@@ -37,6 +37,10 @@ class MainWindow(tk.Tk):
         self.__define_frames()
         self.__define_widgets()
         self.__pack_widgets()
+
+        # Привязываем событие для обновления даты.
+        self.bind('<<OnDateUpdate>>',
+        lambda _: self.label_date.configure(text=f'Выбраная дата: {self.date_parser.date_to_str(user_selected_date)}'))
 
     def __define_internal_vars(self):
         self.show_as = tk.IntVar()
@@ -74,7 +78,7 @@ class MainWindow(tk.Tk):
 
         # На рамке "date"
         self.label_date = ttk.Label(
-            master=self.frame_dictionary_date, text='Выбраная дата: ...')
+            master=self.frame_dictionary_date, text=f'Выбраная дата: {self.date_parser.date_to_str(user_selected_date)}')
         self.button_select_date = ttk.Button(
             master=self.frame_dictionary_date, text='Выбрать дату', command=self.__button_select_date_click)
         # На рамке "show_as"
@@ -145,7 +149,8 @@ class MainWindow(tk.Tk):
     # Обработчики нажатий кнопок
     def __button_select_date_click(self) -> None:
         SelectDateWindow(data_handler=self.data_handler,
-                         date_parser=self.date_parser)
+                         date_parser=self.date_parser,
+                         parent_window=self)
 
     def __add_word_button_click(self) -> None:
         AddWordWindow(data_handler=self.data_handler,
@@ -163,7 +168,8 @@ class MainWindow(tk.Tk):
                 logging.debug(f'{words=}')
             case 'fixed':
                 select_date_window = SelectDateWindow(
-                    data_handler=self.data_handler, date_parser=self.date_parser)
+                    data_handler=self.data_handler, date_parser=self.date_parser,
+                    parent_window=self)
                 select_date_window.wait_window()
                 # Создаём локальную переменную, чтоб случайно не изменить глобальную.
                 date = user_selected_date
@@ -224,10 +230,11 @@ class AddWordWindow(tk.Tk):
 
 
 class SelectDateWindow(tk.Tk):
-    def __init__(self, *, data_handler: JSON, date_parser: ParseDate):
+    def __init__(self, *, data_handler: JSON, date_parser: ParseDate, parent_window: tk.Tk):
         super().__init__()
         self.data_handler = data_handler
         self.date_parser = date_parser
+        self.parent_window = parent_window
 
         self.title('Выбор даты')
 
@@ -271,6 +278,10 @@ class SelectDateWindow(tk.Tk):
         else:
             global user_selected_date
             user_selected_date = parsed_date
+
+            # Создаём событие для обновления даты в надписи на окне.
+            self.parent_window.event_generate('<<OnDateUpdate>>')
+
             # Чтоб пользователь сам не закрывал.
             self.destroy()
 
@@ -279,6 +290,10 @@ class SelectDateWindow(tk.Tk):
             'Кнопка "Выбрать сегодняшнюю дату." (на окне с выбором даты) нажата.')
         global user_selected_date
         user_selected_date = get_today(self.date_parser)
+
+        # Создаём событие для обновления даты в надписи на окне.
+        self.parent_window.event_generate('<<OnDateUpdate>>')
+
         # Чтоб пользователь сам не закрывал.
         self.destroy()
 
