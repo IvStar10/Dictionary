@@ -40,7 +40,7 @@ class MainWindow(tk.Tk):
 
         # Привязываем событие для обновления даты.
         self.bind('<<OnDateUpdate>>',
-        lambda _: self.label_date.configure(text=f'Выбраная дата: {self.date_parser.date_to_str(user_selected_date)}'))
+            lambda _: self.label_date.configure(text=f'Выбраная дата: {self.date_parser.date_to_str(user_selected_date)}'))
 
     def __define_internal_vars(self):
         self.show_as = tk.IntVar()
@@ -320,6 +320,8 @@ class TestWindow(tk.Tk):
         # Выводим первое слово.
         self.label_word.configure(text=self.current_word)
 
+        self.protocol('WM_DELETE_WINDOW', self.__on_closing)
+
     def __define_internal_vars(self):
         self._user_translating = tk.StringVar()
 
@@ -393,3 +395,9 @@ class TestWindow(tk.Tk):
 
         # Меняем надписи
         self.label_word.configure(text=self.current_word)
+
+    def __on_closing(self, *args, **kwargs):
+        self.destroy()
+        showinfo('Тест завершён', f"""Результаты:
+{self._correct_words_counter} правильных слов, {self._incorrect_words_counter} неправильных слов.""")
+        logging.info('Окно с тестами закрыто пользователем.')
