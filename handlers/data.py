@@ -6,7 +6,7 @@ from random import sample
 from datetime import datetime
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 Date = namedtuple('Date', ['day', 'month', 'year'])
 
 
@@ -115,9 +115,6 @@ class JSON:
             words[str_date] = content
         return words
 
-    def test(self):  # DEBUG
-        return self.get_all_words()
-
 
 def get_today(date_parser: ParseDate) -> Date:
     return date_parser.parse(datetime.now().strftime("%d.%m.%Y"))
@@ -126,17 +123,3 @@ def get_today(date_parser: ParseDate) -> Date:
 def gen_random_dict_key(dictionary: dict):
     for rand_key in sample(list(dictionary), len(dictionary)):
         yield rand_key
-
-
-# TODO: Это б удалить...
-if __name__ == "__main__":
-    # Здесь путь считаем от data.py. В main'е будем считать от main.py.
-    # json_handler = JSON(path='../data/test_words.json')
-    # print(json_handler.test())
-
-    date_parser = ParseDate()
-    dates = ('01.01.2025', '12.05.2025', '02.11.2025',
-             '2.11.2025', '12.5.2025', '1.1.205',
-             '07.11.2025', '07-11-2025', '07/11/2025')
-    for date in dates:
-        print(date_parser.parse(date))

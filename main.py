@@ -1,5 +1,4 @@
 # TODO: Добавить поиск по словарю (что-то вроде гугл-переводчика).
-# TODO: На окно с тестами добавить отображение правильно/неправильно введённых слов на закрытие окна.
 # TODO: Разобраться с tkinter.Treeview наконец-то!
 from handlers.gui import MainWindow
 from handlers.data import JSON, ParseDate

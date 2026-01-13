@@ -16,7 +16,7 @@ from .data import (
 )
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 # Знаю, использовать глобальную переменную для этих целей не есть хорошо...
