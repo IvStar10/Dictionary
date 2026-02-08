@@ -16,15 +16,13 @@ from .data import (
 )
 
 
-logging.basicConfig(level=logging.INFO)
-
-
 # Знаю, использовать глобальную переменную для этих целей не есть хорошо...
 user_selected_date: Date = get_today(ParseDate())
 
 
 class MainWindow(tk.Tk):
-    def __init__(self, *, data_handler: JSON, date_parser: ParseDate):
+    def __init__(self, *, data_handler: JSON, date_parser: ParseDate, logger: logging.Logger):
+        self._logger = logger
         self.data_handler = data_handler
         self.date_parser = date_parser
 
@@ -32,22 +30,22 @@ class MainWindow(tk.Tk):
 
         self.title('Словарь')
 
-        self.__define_internal_vars()
-        self.__define_tabs()
-        self.__define_frames()
-        self.__define_widgets()
-        self.__pack_widgets()
+        self._define_internal_vars()
+        self._define_tabs()
+        self._define_frames()
+        self._define_widgets()
+        self._pack_widgets()
 
         # Привязываем событие для обновления даты.
         self.bind('<<OnDateUpdate>>',
-            lambda _: self.label_date.configure(text=f'Выбраная дата: {self.date_parser.date_to_str(user_selected_date)}'))
+                  lambda _: self.label_date.configure(text=f'Выбраная дата: {self.date_parser.date_to_str(user_selected_date)}'))
 
-    def __define_internal_vars(self):
+    def _define_internal_vars(self):
         self.show_as = tk.IntVar()
         self.radiobtn_tests_time_var = tk.StringVar()
         self.radiobtn_tests_lang_var = tk.IntVar()
 
-    def __define_tabs(self):
+    def _define_tabs(self):
         self.notebook = ttk.Notebook(master=self)
         self.notebook.pack()
 
@@ -61,7 +59,7 @@ class MainWindow(tk.Tk):
 
         self.notebook.pack()
 
-    def __define_frames(self):
+    def _define_frames(self):
         # На вкладке "Словарь"
         self.frame_dictionary_date = ttk.Frame(master=self.tab_dictionary)
         self.frame_dictionary_show_as = ttk.Frame(master=self.tab_dictionary)
@@ -69,18 +67,18 @@ class MainWindow(tk.Tk):
         self.frame_tests_time = ttk.Frame(master=self.tab_tests)
         self.frame_tests_lang = ttk.Frame(master=self.tab_tests)
 
-    def __define_widgets(self):
+    def _define_widgets(self):
         # На вкладке "Словарь"
 
         self.add_word_button = ttk.Button(
             master=self.tab_dictionary, text='Добавить слово',
-            command=self.__add_word_button_click)
+            command=self._add_word_button_click)
 
         # На рамке "date"
         self.label_date = ttk.Label(
             master=self.frame_dictionary_date, text=f'Выбраная дата: {self.date_parser.date_to_str(user_selected_date)}')
         self.button_select_date = ttk.Button(
-            master=self.frame_dictionary_date, text='Выбрать дату', command=self.__button_select_date_click)
+            master=self.frame_dictionary_date, text='Выбрать дату', command=self._button_select_date_click)
         # На рамке "show_as"
         self.label_show_as = ttk.Label(
             master=self.frame_dictionary_show_as, text="Показывать")
@@ -114,19 +112,19 @@ class MainWindow(tk.Tk):
 
         self.btn_start_test = ttk.Button(
             master=self.tab_tests, text='Начать тест',
-            command=self.__btn_start_test_click)
+            command=self._btn_start_test_click)
 
-    def __pack_frames(self):
+    def _pack_frames(self):
         self.frame_dictionary_date.pack(anchor='w')
         self.frame_dictionary_show_as.pack(anchor='w')
         self.frame_tests_time.pack()
         self.frame_tests_lang.pack()
 
-    def __pack_widgets(self):
+    def _pack_widgets(self):
         # На вкладке "Словарь"
         self.add_word_button.pack(anchor='w')
 
-        self.__pack_frames()  # Все рамки.
+        self._pack_frames()  # Все рамки.
 
         self.label_date.pack(anchor='w')
         self.button_select_date.pack(anchor='w')
@@ -147,16 +145,18 @@ class MainWindow(tk.Tk):
         self.btn_start_test.pack(anchor='e')
 
     # Обработчики нажатий кнопок
-    def __button_select_date_click(self) -> None:
+    def _button_select_date_click(self) -> None:
         SelectDateWindow(data_handler=self.data_handler,
                          date_parser=self.date_parser,
-                         parent_window=self)
+                         parent_window=self,
+                         logger=self._logger)
 
-    def __add_word_button_click(self) -> None:
+    def _add_word_button_click(self) -> None:
         AddWordWindow(data_handler=self.data_handler,
-                      date_parser=self.date_parser)
+                      date_parser=self.date_parser,
+                      logger=self._logger)
 
-    def __btn_start_test_click(self) -> None:
+    def _btn_start_test_click(self) -> None:
         tests_time = self.radiobtn_tests_time_var.get()
         tests_lang = self.radiobtn_tests_lang_var.get()
 
@@ -165,11 +165,12 @@ class MainWindow(tk.Tk):
         match tests_time:
             case 'all':
                 words: dict = self.data_handler.get_all_words()
-                logging.debug(f'{words=}')
+                self._logger.debug(f'{words=}')
             case 'fixed':
                 select_date_window = SelectDateWindow(
                     data_handler=self.data_handler, date_parser=self.date_parser,
-                    parent_window=self)
+                    parent_window=self,
+                    logger=self._logger)
                 select_date_window.wait_window()
                 # Создаём локальную переменную, чтоб случайно не изменить глобальную.
                 date = user_selected_date
@@ -178,97 +179,98 @@ class MainWindow(tk.Tk):
                         date)  # type: ignore
                 except DateNotFoundError as e:
                     showerror("Дата не найдена", str(e))
-                    logging.error(e)
+                    self._logger.error(e)
                     return
 
         match tests_lang:
             case 1:
                 # Ничего не делаем, слова и так в правильном порядке.
-                logging.debug("Не перевёрнутый словарь: %s", (words))
+                self._logger.debug("Не перевёрнутый словарь: %s", (words))
             case 2:
                 # Переворачиваем словарь.
                 words = {value: key for key, value in words.items()}
-                logging.debug("Перевёрнутый словарь: %s", (words))
+                self._logger.debug("Перевёрнутый словарь: %s", (words))
 
         TestWindow(data_handler=self.data_handler,
-                   words=words)
+                   words=words,
+                   logger=self._logger)
 
 
 class AddWordWindow(tk.Tk):
-    def __init__(self, *, data_handler: JSON, date_parser: ParseDate):
+    def __init__(self, *, data_handler: JSON, date_parser: ParseDate, logger: logging.Logger):
         super().__init__()
 
+        self._logger = logger
         self.data_handler = data_handler
         self.date_parser = date_parser
 
         self.title('Добавление слова')
 
-        self.__define_widgets()
-        self.__pack_widgets()
+        self._define_widgets()
+        self._pack_widgets()
 
-    def __define_widgets(self):
+    def _define_widgets(self):
         self.label_word = ttk.Label(self, text='Слово:')
         self.entry_word = ttk.Entry(self)
         self.label_translating = ttk.Label(self, text='Перевод:')
         self.entry_translating = ttk.Entry(self)
         self.button_add_a_word = ttk.Button(
-            self, text='Добавить', command=self.__add_word)
+            self, text='Добавить', command=self._add_word)
 
-    def __pack_widgets(self):
+    def _pack_widgets(self):
         self.label_word.pack(anchor='w')
         self.entry_word.pack()
         self.label_translating.pack(anchor='w')
         self.entry_translating.pack()
         self.button_add_a_word.pack(anchor='e')
 
-    def __add_word(self):
+    def _add_word(self):
         today: Date = get_today(self.date_parser)
-        logging.debug(f'{today=}')
+        self._logger.debug(f'{today=}')
         self.data_handler.add_word(today, self.entry_word.get(),
                                    self.entry_translating.get())
-        logging.debug(self.data_handler.get_all_words())
+        self._logger.debug(self.data_handler.get_all_words())
 
 
 class SelectDateWindow(tk.Tk):
-    def __init__(self, *, data_handler: JSON, date_parser: ParseDate, parent_window: tk.Tk):
+    def __init__(self, *, data_handler: JSON, date_parser: ParseDate, parent_window: tk.Tk, logger: logging.Logger):
         super().__init__()
+        self._logger = logger
         self.data_handler = data_handler
         self.date_parser = date_parser
         self.parent_window = parent_window
 
         self.title('Выбор даты')
 
-        self.user_selected_date: Date | None = None
+        self._define_internal_vars()
+        self._define_widgets()
+        self._pack_widgets()
 
-        self.__define_internal_vars()
-        self.__define_widgets()
-        self.__pack_widgets()
-
-    def __define_internal_vars(self):
+    def _define_internal_vars(self):
         self.user_date = tk.StringVar()
 
-    def __define_widgets(self):
+    def _define_widgets(self):
         self.label_instruction = ttk.Label(
             self, text='Введите дату в формате "дд.мм.гггг"')
         self.entry_date = ttk.Entry(self, textvariable=self.user_date)
         self.button_ok = ttk.Button(
-            self, text='Выбрать', command=self.__button_ok_click)
+            self, text='Выбрать', command=self._button_ok_click)
         self.button_select_todays_date = ttk.Button(
-            self, text='Выбрать сегодняшнюю дату.', command=self.__button_select_todays_date_click)
+            self, text='Выбрать сегодняшнюю дату.', command=self._button_select_todays_date_click)
 
-    def __pack_widgets(self):
+    def _pack_widgets(self):
         self.label_instruction.grid(row=0, column=0, columnspan=2)
         self.entry_date.grid(row=1, column=0, columnspan=2)
         self.button_select_todays_date.grid(row=2, column=0)
         self.button_ok.grid(row=2, column=1)
 
-    def __button_ok_click(self):
-        logging.info('Кнопка "Выбрать" (на окне с выбором даты) нажата.')
+    def _button_ok_click(self):
+        self._logger.info('Кнопка "Выбрать" (на окне с выбором даты) нажата.')
         user_date: str = self.entry_date.get()
         try:
             parsed_date: Date = self.date_parser.parse(user_date)
         except InvalidDateError:
-            logging.error(
+            self._logger.error(
                 f'Пользователь ввёл неправильную дату, а именно - {user_date}')
             showerror("Неправильная дата",
                       """Введена неправильная дата!
@@ -285,8 +287,8 @@ class SelectDateWindow(tk.Tk):
             # Чтоб пользователь сам не закрывал.
             self.destroy()
 
-    def __button_select_todays_date_click(self):
-        logging.info(
+    def _button_select_todays_date_click(self):
+        self._logger.info(
             'Кнопка "Выбрать сегодняшнюю дату." (на окне с выбором даты) нажата.')
         global user_selected_date
         user_selected_date = get_today(self.date_parser)
@@ -299,8 +301,9 @@ class SelectDateWindow(tk.Tk):
 
 
 class TestWindow(tk.Tk):
-    def __init__(self, *, data_handler: JSON, words: dict):
+    def __init__(self, *, data_handler: JSON, words: dict, logger: logging.Logger):
         # Прокидываем обработчики и настройки.
+        self._logger = logger
         self.data_handler = data_handler
         self.words = words
 
@@ -310,9 +313,9 @@ class TestWindow(tk.Tk):
 
         super().__init__()
 
-        self.__define_internal_vars()
-        self.__define_widgets()
-        self.__pack_widgets()
+        self._define_internal_vars()
+        self._define_widgets()
+        self._pack_widgets()
 
         # Создаём новый генератор, чтобы была именно последовательность.
         self.get_next_random_dict_key = gen_random_dict_key(self.words)
@@ -320,27 +323,27 @@ class TestWindow(tk.Tk):
         # Выводим первое слово.
         self.label_word.configure(text=self.current_word)
 
-        self.protocol('WM_DELETE_WINDOW', self.__on_closing)
+        self.protocol('WM_DELETE_WINDOW', self._on_closing)
 
-    def __define_internal_vars(self):
+    def _define_internal_vars(self):
         self._user_translating = tk.StringVar()
 
-    def __define_widgets(self):
+    def _define_widgets(self):
         self.label_greeting = ttk.Label(master=self, text='Переведите слово:')
         self.label_word = ttk.Label(master=self, text='')
 
         self.entry_translating = ttk.Entry(
             master=self, textvariable=self._user_translating)
         self.button_check = ttk.Button(
-            master=self, text='Проверить', command=self.__button_check_click)
+            master=self, text='Проверить', command=self._button_check_click)
 
         self.label_result = ttk.Label(master=self, text='')
         self.label_true_translating = ttk.Label(master=self, text='')
 
         self.button_next = ttk.Button(
-            master=self, text='Далее', command=self.__button_next_click)
+            master=self, text='Далее', command=self._button_next_click)
 
-    def __pack_widgets(self):
+    def _pack_widgets(self):
         self.label_greeting.pack()
         self.label_word.pack()
 
@@ -352,15 +355,15 @@ class TestWindow(tk.Tk):
 
         self.button_next.pack(anchor='e')
 
-    def __button_check_click(self):
-        logging.info('Нажата кнопка "Проверить"')
-        logging.debug(self.entry_translating.get())
+    def _button_check_click(self):
+        self._logger.info('Нажата кнопка "Проверить"')
+        self._logger.debug(self.entry_translating.get())
         user_translating: str = self.entry_translating.get().strip().lower()
 
         current_translating = self.words[self.current_word]
-        logging.debug(f'{current_translating=}')
+        self._logger.debug(f'{current_translating=}')
 
-        logging.debug(f'{user_translating=}')
+        self._logger.debug(f'{user_translating=}')
 
         if user_translating == current_translating:
             self._correct_words_counter += 1
@@ -373,8 +376,8 @@ class TestWindow(tk.Tk):
         self.label_true_translating.configure(
             text=f"Правильный перевод: {current_translating}")
 
-    def __button_next_click(self):
-        logging.info('Нажата кнопка "Далее".')
+    def _button_next_click(self):
+        self._logger.info('Нажата кнопка "Далее".')
 
         # Сбрасываем надписи
         self.label_result.configure(text='')
@@ -390,14 +393,14 @@ class TestWindow(tk.Tk):
             self.destroy()
             showinfo('Тест завершён', f"""Результаты:
 {self._correct_words_counter} правильных слов, {self._incorrect_words_counter} неправильных слов.""")
-            logging.info('Тесты завершены, окно с тестами закрыто.')
+            self._logger.info('Тесты завершены, окно с тестами закрыто.')
             return
 
         # Меняем надписи
         self.label_word.configure(text=self.current_word)
 
-    def __on_closing(self, *args, **kwargs):
+    def _on_closing(self, *args, **kwargs):
         self.destroy()
         showinfo('Тест завершён', f"""Результаты:
 {self._correct_words_counter} правильных слов, {self._incorrect_words_counter} неправильных слов.""")
-        logging.info('Окно с тестами закрыто пользователем.')
+        self._logger.info('Окно с тестами закрыто пользователем.')

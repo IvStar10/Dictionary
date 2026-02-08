@@ -1,14 +1,21 @@
 # TODO: Добавить поиск по словарю (что-то вроде гугл-переводчика).
 # TODO: Разобраться с tkinter.Treeview наконец-то!
+import logging
 from handlers.gui import MainWindow
 from handlers.data import JSON, ParseDate
 
 
 def main() -> None:
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+
     date_parser = ParseDate()
-    data_handler = JSON(path='data/words.json', date_parser=date_parser)
+    data_handler = JSON(path='data/words.json',
+                        date_parser=date_parser,
+                        logger=logger)
     root_window = MainWindow(data_handler=data_handler,
-                             date_parser=date_parser)
+                             date_parser=date_parser,
+                             logger=logger)
     root_window.mainloop()
 
 

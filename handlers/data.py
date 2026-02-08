@@ -6,7 +6,6 @@ from random import sample
 from datetime import datetime
 
 
-logging.basicConfig(level=logging.INFO)
 Date = namedtuple('Date', ['day', 'month', 'year'])
 
 
@@ -50,7 +49,8 @@ class ParseDate:
 
 
 class JSON:
-    def __init__(self, path: str, date_parser: ParseDate) -> None:
+    def __init__(self, path: str, date_parser: ParseDate, logger: logging.Logger) -> None:
+        self._logger = logger
         self._path = path
         self._date_parser = date_parser
 
@@ -91,7 +91,7 @@ class JSON:
         # Пишем в json.
         self.__write_to_json(
             data=self.__dict_with_namedtuple_to_raw_dict(words))
-        logging.info(f"В {self._path} добавлено новое слово.")
+        self._logger.info(f"В {self._path} добавлено новое слово.")
 
     def __load_json(self) -> dict[str, dict[str, str]]:
         with open(self._path, 'r', encoding='utf-8') as file:
