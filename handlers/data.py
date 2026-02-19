@@ -44,8 +44,7 @@ class ParseDate:
         return Date(new_day, new_month, new_year)
 
     def date_to_str(self, date: Date) -> str:
-        formatted_date = self.format_date(date)
-        return f'{formatted_date.day}.{formatted_date.month}.{formatted_date.year}'
+        return f'{date.day}.{date.month}.{date.year}'
 
 
 class JSON:
