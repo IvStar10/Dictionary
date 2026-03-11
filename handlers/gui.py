@@ -11,6 +11,7 @@ from .data import (
     Date,
     InvalidDateError,
     DateNotFoundError,
+    WordIsEmptyError,
     gen_random_dict_key,
     get_today
 )
@@ -179,7 +180,7 @@ class MainWindow(tk.Tk):
                         date)  # type: ignore
                 except DateNotFoundError as e:
                     showerror("Дата не найдена", str(e))
-                    self._logger.error(e)
+                    self._logger.warning(e)
                     return
 
         match tests_lang:
@@ -227,8 +228,11 @@ class AddWordWindow(tk.Tk):
     def _add_word(self):
         today: Date = get_today(self.date_parser)
         self._logger.debug(f'{today=}')
-        self.data_handler.add_word(today, self.entry_word.get(),
-                                   self.entry_translating.get())
+        try:
+            self.data_handler.add_word(today, self.entry_word.get(),
+                                       self.entry_translating.get())
+        except WordIsEmptyError:
+            showerror("Ошибка", "Введено пустое слово.")
         self._logger.debug(self.data_handler.get_all_words())
 
 
@@ -270,7 +274,7 @@ class SelectDateWindow(tk.Tk):
         try:
             parsed_date: Date = self.date_parser.parse(user_date)
         except InvalidDateError:
-            self._logger.error(
+            self._logger.warning(
                 f'Пользователь ввёл неправильную дату, а именно - {user_date}')
             showerror("Неправильная дата",
                       """Введена неправильная дата!

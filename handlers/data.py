@@ -9,11 +9,23 @@ from datetime import datetime
 Date = namedtuple('Date', ['day', 'month', 'year'])
 
 
-class InvalidDateError(Exception):
+class DateParsingError(Exception):
     pass
 
 
-class DateNotFoundError(Exception):
+class FileReadingWritingError(Exception):
+    pass
+
+
+class WordIsEmptyError(FileReadingWritingError):
+    pass
+
+
+class InvalidDateError(DateParsingError):
+    pass
+
+
+class DateNotFoundError(DateParsingError):
     pass
 
 
@@ -25,13 +37,12 @@ class ParseDate:
         date = date.strip()
         found_date = re.search(self._REGEXPR_DATE, date)
 
-        try:
-            day = found_date.group(1)  # type: ignore
-            month = found_date.group(2)  # type: ignore
-            year = found_date.group(3)  # type: ignore
-        # Если found_date - None, то found_date.group() вызовет ошибку AttributeError.
-        except AttributeError:
+        if found_date is None:
             raise InvalidDateError(f'Date "{date}" is invalid.')
+
+        day = found_date.group(1)  # type: ignore
+        month = found_date.group(2)  # type: ignore
+        year = found_date.group(3)  # type: ignore
 
         result = self.format_date(Date(day, month, year))
         return result
@@ -78,6 +89,9 @@ class JSON:
     def add_word(self, date: Date, word: str, translating: str) -> None:
         word = word.strip().lower()
         translating = translating.strip().lower()
+        if not word or not translating:
+            self._logger.warning("Пользователь попытался добавить пустое слово.")
+            raise WordIsEmptyError
 
         json = self.__load_json()
         words = self.__raw_dict_to_dict_with_namedtuple(json)
