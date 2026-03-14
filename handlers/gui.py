@@ -62,7 +62,7 @@ class MainWindow(tk.Tk):
 
     def _define_frames(self):
         # На вкладке "Словарь"
-        self.frame_dictionary_date = ttk.Frame(master=self.tab_dictionary)
+        self.tools_frame = ttk.Frame(master=self.tab_dictionary)
         self.frame_dictionary_show_as = ttk.Frame(master=self.tab_dictionary)
         # На вкладке "Тесты"
         self.frame_tests_time = ttk.Frame(master=self.tab_tests)
@@ -70,16 +70,17 @@ class MainWindow(tk.Tk):
 
     def _define_widgets(self):
         # На вкладке "Словарь"
-
-        self.add_word_button = ttk.Button(
-            master=self.tab_dictionary, text='Добавить слово',
-            command=self._add_word_button_click)
-
-        # На рамке "date"
+        # На рамке "tools"
+        # TODO: Добавить иконки.
         self.label_date = ttk.Label(
-            master=self.frame_dictionary_date, text=f'Выбраная дата: {self.date_parser.date_to_str(user_selected_date)}')
+            master=self.tools_frame, text=f'Выбраная дата: {self.date_parser.date_to_str(user_selected_date)}')
+        self.add_word_button = ttk.Button(
+            master=self.tools_frame, text='Добавить слово',
+            command=self._add_word_button_click)
+        self.search_word_button = ttk.Button(
+            master=self.tools_frame, text="Search", command=self._search_word_button_click)
         self.button_select_date = ttk.Button(
-            master=self.frame_dictionary_date, text='Выбрать дату', command=self._button_select_date_click)
+            master=self.tools_frame, text='Выбрать дату', command=self._button_select_date_click)
         # На рамке "show_as"
         self.label_show_as = ttk.Label(
             master=self.frame_dictionary_show_as, text="Показывать")
@@ -92,7 +93,6 @@ class MainWindow(tk.Tk):
         self.treeview_words = ttk.Treeview(master=self.tab_dictionary)
 
         # На вкладке "Тесты"
-
         # На рамке "time"
         self.label_test_time = ttk.Label(
             master=self.frame_tests_time, text="Тестировать за:")
@@ -116,19 +116,19 @@ class MainWindow(tk.Tk):
             command=self._btn_start_test_click)
 
     def _pack_frames(self):
-        self.frame_dictionary_date.pack(anchor='w')
+        self.tools_frame.pack(anchor='w')
         self.frame_dictionary_show_as.pack(anchor='w')
         self.frame_tests_time.pack()
         self.frame_tests_lang.pack()
 
     def _pack_widgets(self):
-        # На вкладке "Словарь"
-        self.add_word_button.pack(anchor='w')
-
         self._pack_frames()  # Все рамки.
 
-        self.label_date.pack(anchor='w')
-        self.button_select_date.pack(anchor='w')
+        # На вкладке "Словарь"
+        self.label_date.grid(row=0, column=0)
+        self.add_word_button.grid(row=0, column=1)
+        self.search_word_button.grid(row=0, column=2)
+        self.button_select_date.grid(row=0, column=3)
         self.label_show_as.pack(anchor='w')
         self.radiobutton_as_abc.pack(anchor='w')
         self.radiobutton_as_time.pack(anchor='w')
@@ -156,6 +156,9 @@ class MainWindow(tk.Tk):
         AddWordWindow(data_handler=self.data_handler,
                       date_parser=self.date_parser,
                       logger=self._logger)
+
+    def _search_word_button_click(self) -> None:
+        ...
 
     def _btn_start_test_click(self) -> None:
         tests_time = self.radiobtn_tests_time_var.get()
