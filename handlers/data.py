@@ -1,26 +1,26 @@
 import json
 import re
 import logging
-from collections import namedtuple
+from typing import NamedTuple
 from random import sample
 from datetime import datetime
 
 from . import exceptions
 
-""" TODO:
-1. Сделать Date классом, наследующим именованный кортеж, и сделать там статический метод parse вместо текущего класса.
-"""
 
-Date = namedtuple('Date', ['day', 'month', 'year'])
+class Date(NamedTuple):
+    day: str
+    month: str
+    year: str
 
+    def __str__(self) -> str:
+        return f'{self.day}.{self.month}.{self.year}'
 
-class ParseDate:
-    def __init__(self) -> None:
-        self._REGEXPR_DATE = r"(\d{1,2})[\./-](\d{1,2})[\./-](\d{3,4})"
-
-    def parse(self, date: str) -> Date:
+    @staticmethod
+    def parse(date: str) -> 'Date':
+        _REGEXPR_DATE = r"(\d{1,2})[\./-](\d{1,2})[\./-](\d{3,4})"
         date = date.strip()
-        found_date = re.search(self._REGEXPR_DATE, date)
+        found_date = re.search(_REGEXPR_DATE, date)
 
         if found_date is None:
             raise exceptions.InvalidDateError(f'Date "{date}" is invalid.')
@@ -29,25 +29,22 @@ class ParseDate:
         month = found_date.group(2)  # type: ignore
         year = found_date.group(3)  # type: ignore
 
-        result = self.format_date(Date(day, month, year))
+        result = Date.format_date(Date(day, month, year))
         return result
 
-    def format_date(self, old_date: Date) -> Date:
+    @staticmethod
+    def format_date(old_date: 'Date') -> 'Date':
         # Забиваем нулями, чтоб довести до "дд.мм.гггг".
         new_day = old_date.day.zfill(2)
         new_month = old_date.month.zfill(2)
         new_year = old_date.year.zfill(4)
         return Date(new_day, new_month, new_year)
 
-    def date_to_str(self, date: Date) -> str:
-        return f'{date.day}.{date.month}.{date.year}'
-
 
 class JSON:
-    def __init__(self, path: str, date_parser: ParseDate, logger: logging.Logger) -> None:
+    def __init__(self, path: str, logger: logging.Logger) -> None:
         self._logger = logger
         self._path = path
-        self._date_parser = date_parser
 
     def get_words(self, date: Date) -> dict[str, str]:
         json = self.__load_json()
@@ -56,7 +53,7 @@ class JSON:
             words = all_words[date]
         except KeyError:
             raise exceptions.DateNotFoundError(
-                f'Не найдено ни одного слова за дату "{self._date_parser.date_to_str(date)}".')
+                f'Не найдено ни одного слова за дату "{str(date)}".')
 
         return words
 
@@ -103,20 +100,20 @@ class JSON:
     def __raw_dict_to_dict_with_namedtuple(self, raw_dict: dict[str, dict]) -> dict[Date, dict]:
         words: dict[Date, dict[str, str]] = {}
         for date, content in raw_dict.items():
-            parsed_date = self._date_parser.parse(date)
+            parsed_date = Date.parse(date)
             words[parsed_date] = content
         return words
 
     def __dict_with_namedtuple_to_raw_dict(self, dict_with_namedtuple: dict[Date, dict]) -> dict[str, dict]:
         words: dict[str, dict[str, str]] = {}
         for date, content in dict_with_namedtuple.items():
-            str_date = self._date_parser.date_to_str(date)
+            str_date = str(date)
             words[str_date] = content
         return words
 
 
-def get_today(date_parser: ParseDate) -> Date:
-    return date_parser.parse(datetime.now().strftime("%d.%m.%Y"))
+def get_today() -> Date:
+    return Date.parse(datetime.now().strftime("%d.%m.%Y"))
 
 
 def gen_random_dict_key(dictionary: dict):
