@@ -5,6 +5,10 @@ from collections import namedtuple
 from random import sample
 from datetime import datetime
 
+""" TODO:
+1. Вынести классы ошибок в отдельный модуль.
+2. Сделать Date классом, наследующим именованный кортеж, и сделать там статический метод parse вместо текущего класса.
+"""
 
 Date = namedtuple('Date', ['day', 'month', 'year'])
 
@@ -90,7 +94,8 @@ class JSON:
         word = word.strip().lower()
         translating = translating.strip().lower()
         if not word or not translating:
-            self._logger.warning("Пользователь попытался добавить пустое слово.")
+            self._logger.warning(
+                "Пользователь попытался добавить пустое слово.")
             raise WordIsEmptyError
 
         json = self.__load_json()
