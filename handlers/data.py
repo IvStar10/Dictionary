@@ -5,32 +5,13 @@ from collections import namedtuple
 from random import sample
 from datetime import datetime
 
+from . import exceptions
+
 """ TODO:
-1. Вынести классы ошибок в отдельный модуль.
-2. Сделать Date классом, наследующим именованный кортеж, и сделать там статический метод parse вместо текущего класса.
+1. Сделать Date классом, наследующим именованный кортеж, и сделать там статический метод parse вместо текущего класса.
 """
 
 Date = namedtuple('Date', ['day', 'month', 'year'])
-
-
-class DateParsingError(Exception):
-    pass
-
-
-class FileReadingWritingError(Exception):
-    pass
-
-
-class WordIsEmptyError(FileReadingWritingError):
-    pass
-
-
-class InvalidDateError(DateParsingError):
-    pass
-
-
-class DateNotFoundError(DateParsingError):
-    pass
 
 
 class ParseDate:
@@ -42,7 +23,7 @@ class ParseDate:
         found_date = re.search(self._REGEXPR_DATE, date)
 
         if found_date is None:
-            raise InvalidDateError(f'Date "{date}" is invalid.')
+            raise exceptions.InvalidDateError(f'Date "{date}" is invalid.')
 
         day = found_date.group(1)  # type: ignore
         month = found_date.group(2)  # type: ignore
@@ -74,7 +55,7 @@ class JSON:
         try:
             words = all_words[date]
         except KeyError:
-            raise DateNotFoundError(
+            raise exceptions.DateNotFoundError(
                 f'Не найдено ни одного слова за дату "{self._date_parser.date_to_str(date)}".')
 
         return words
@@ -96,7 +77,7 @@ class JSON:
         if not word or not translating:
             self._logger.warning(
                 "Пользователь попытался добавить пустое слово.")
-            raise WordIsEmptyError
+            raise exceptions.WordIsEmptyError
 
         json = self.__load_json()
         words = self.__raw_dict_to_dict_with_namedtuple(json)

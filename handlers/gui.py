@@ -9,11 +9,13 @@ from .data import (
     JSON,
     ParseDate,
     Date,
-    InvalidDateError,
-    DateNotFoundError,
-    WordIsEmptyError,
     gen_random_dict_key,
     get_today
+)
+from .exceptions import (
+    InvalidDateError,
+    DateNotFoundError,
+    WordIsEmptyError
 )
 
 
