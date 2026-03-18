@@ -156,7 +156,8 @@ class MainWindow(tk.Tk):
                       logger=self._logger)
 
     def _search_word_button_click(self) -> None:
-        ...
+        SearchWordWindow(data_handler=self.data_handler,
+                         logger=self._logger)
 
     def _btn_start_test_click(self) -> None:
         tests_time = self.radiobtn_tests_time_var.get()
@@ -233,7 +234,37 @@ class AddWordWindow(tk.Tk):
                                        self.entry_translating.get())
         except WordIsEmptyError:
             showerror("Ошибка", "Введено пустое слово.")
+            self._logger.warning("Пользователь ввёл пустое слово.")
         self._logger.debug(self.data_handler.get_all_words())
+
+
+class SearchWordWindow(tk.Tk):
+    def __init__(self, *, data_handler: JSON, logger: logging.Logger):
+        super().__init__()
+        self._logger = logger
+        self.data_handler = data_handler
+
+        self._define_widgets()
+        self._pack_widgets()
+
+        self.title("Поиск слов.")
+
+    def _define_widgets(self):
+        self.label1 = ttk.Label(self, text="Найти")
+        self.combobox_lang = ttk.Combobox(self, values=["английское", "русское"])
+        self.label2 = ttk.Label(self, text="слово")
+        self.entry_word = ttk.Entry(self)
+        self.button_search = ttk.Button(self, text="Поиск", command=self._search)
+
+    def _pack_widgets(self):
+        self.label1.grid(row=0, column=0)
+        self.combobox_lang.grid(row=0, column=1)
+        self.label2.grid(row=0, column=2)
+        self.entry_word.grid(row=1, column=0, columnspan=2)
+        self.button_search.grid(row=1, column=2)
+
+    def _search(self):
+        pass
 
 
 class SelectDateWindow(tk.Tk):
@@ -250,7 +281,7 @@ class SelectDateWindow(tk.Tk):
         self._pack_widgets()
 
     def _define_internal_vars(self):
-        self.user_date = tk.StringVar()
+        self.user_date = tk.StringVar()  # FIXME: Переменная не используеться!
 
     def _define_widgets(self):
         self.label_instruction = ttk.Label(
