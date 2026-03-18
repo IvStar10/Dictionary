@@ -276,17 +276,13 @@ class SelectDateWindow(tk.Tk):
 
         self.title('Выбор даты')
 
-        self._define_internal_vars()
         self._define_widgets()
         self._pack_widgets()
-
-    def _define_internal_vars(self):
-        self.user_date = tk.StringVar()  # FIXME: Переменная не используеться!
 
     def _define_widgets(self):
         self.label_instruction = ttk.Label(
             self, text='Введите дату в формате "дд.мм.гггг"')
-        self.entry_date = ttk.Entry(self, textvariable=self.user_date)
+        self.entry_date = ttk.Entry(self)
         self.button_ok = ttk.Button(
             self, text='Выбрать', command=self._button_ok_click)
         self.button_select_todays_date = ttk.Button(
