@@ -41,6 +41,8 @@ class Date(NamedTuple):
         return Date(new_day, new_month, new_year)
 
 
+# TODO: Разбить на 2 разных класса, один из которых отвечает за обработку файла, а другой - за работу со словами.
+# Так будет легче переписывать на использование БД.
 class JSON:
     def __init__(self, path: str, logger: logging.Logger) -> None:
         self._logger = logger
@@ -88,6 +90,22 @@ class JSON:
         self.__write_to_json(
             data=self.__dict_with_namedtuple_to_raw_dict(words))
         self._logger.info(f"В {self._path} добавлено новое слово.")
+
+    def search_word(self, word: str, is_search_in_main_lang: bool) -> str:
+        # UNTESTED
+        word = word.strip().lower()
+        words = self.get_all_words()
+        if not is_search_in_main_lang:
+            words = {value: key for key, value in words.items()}
+        if not word:
+            raise exceptions.WordIsEmptyError
+            self._logger.warning(
+                "Пользователь попытался найти пустое слово.")
+        try:
+            return words[word]
+        except KeyError:
+            raise exceptions.WordNotFoundError(f"Слово {word} не найдено.")
+            self._logger.warning(f"Слово {word} не найдено.")
 
     def __load_json(self) -> dict[str, dict[str, str]]:
         with open(self._path, 'r', encoding='utf-8') as file:

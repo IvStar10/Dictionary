@@ -14,7 +14,8 @@ from .data import (
 from .exceptions import (
     InvalidDateError,
     DateNotFoundError,
-    WordIsEmptyError
+    WordIsEmptyError,
+    WordNotFoundError
 )
 
 
@@ -243,18 +244,21 @@ class SearchWordWindow(tk.Tk):
         super().__init__()
         self._logger = logger
         self.data_handler = data_handler
+        self.languages = ("английское", "русское")
 
         self._define_widgets()
         self._pack_widgets()
+        self.combobox_lang.current(0)
 
         self.title("Поиск слов.")
 
     def _define_widgets(self):
         self.label1 = ttk.Label(self, text="Найти")
-        self.combobox_lang = ttk.Combobox(self, values=["английское", "русское"])
+        self.combobox_lang = ttk.Combobox(self, values=self.languages)
         self.label2 = ttk.Label(self, text="слово")
         self.entry_word = ttk.Entry(self)
         self.button_search = ttk.Button(self, text="Поиск", command=self._search)
+        self.answer_label = ttk.Label(self, text="")
 
     def _pack_widgets(self):
         self.label1.grid(row=0, column=0)
@@ -262,9 +266,28 @@ class SearchWordWindow(tk.Tk):
         self.label2.grid(row=0, column=2)
         self.entry_word.grid(row=1, column=0, columnspan=2)
         self.button_search.grid(row=1, column=2)
+        self.answer_label.grid(row=2, column=0, columnspan=3)
 
     def _search(self):
-        pass
+        # UNTESTED
+        if self.combobox_lang.get() == self.languages[0]:
+            is_eng = True
+        elif self.combobox_lang.get() == self.languages[1]:
+            is_eng = False
+        else:
+            # Мало ли, что пользователь введёт
+            self._logger.warning("Получен неизвесный язык.")
+            showerror("Ошибка", "Введён неизвесный язык.")
+        try:
+            answer = self.data_handler.search_word(self.entry_word.get(), is_eng)
+        except WordIsEmptyError:
+            showerror("Ошибка", "Введено пустое слово.")
+            self._logger.warning("Пользователь ввёл пустое слово.")
+            return
+        except WordNotFoundError as e:
+            showerror("Ошибка", e)
+            return
+        self.answer_label.configure(text=answer)
 
 
 class SelectDateWindow(tk.Tk):

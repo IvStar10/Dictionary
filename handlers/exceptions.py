@@ -10,6 +10,10 @@ class WordIsEmptyError(FileReadingWritingError):
     pass
 
 
+class WordNotFoundError(FileReadingWritingError):
+    pass
+
+
 class InvalidDateError(DateParsingError):
     pass
 
