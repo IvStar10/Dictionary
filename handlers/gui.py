@@ -6,9 +6,9 @@ from tkinter import ttk
 from tkinter.messagebox import showerror, showinfo
 
 from .data import (
+    WordsStore,
     JSON,
     Date,
-    gen_random_dict_key,
     get_today
 )
 from .exceptions import (
@@ -24,9 +24,9 @@ user_selected_date: Date = get_today()
 
 
 class MainWindow(tk.Tk):
-    def __init__(self, *, data_handler: JSON, logger: logging.Logger):
+    def __init__(self, *, words_store: WordsStore, logger: logging.Logger):
         self._logger = logger
-        self.data_handler = data_handler
+        self.words_store = words_store
 
         super().__init__()
 
@@ -148,16 +148,16 @@ class MainWindow(tk.Tk):
 
     # Обработчики нажатий кнопок
     def _button_select_date_click(self) -> None:
-        SelectDateWindow(data_handler=self.data_handler,
+        SelectDateWindow(words_store=self.words_store,
                          parent_window=self,
                          logger=self._logger)
 
     def _add_word_button_click(self) -> None:
-        AddWordWindow(data_handler=self.data_handler,
+        AddWordWindow(words_store=self.words_store,
                       logger=self._logger)
 
     def _search_word_button_click(self) -> None:
-        SearchWordWindow(data_handler=self.data_handler,
+        SearchWordWindow(words_store=self.words_store,
                          logger=self._logger)
 
     def _btn_start_test_click(self) -> None:
@@ -168,18 +168,18 @@ class MainWindow(tk.Tk):
         # в зависимости от времени.
         match tests_time:
             case 'all':
-                words: dict = self.data_handler.get_all_words()
+                words: dict = self.words_store.get_all_words()
                 self._logger.debug(f'{words=}')
             case 'fixed':
                 select_date_window = SelectDateWindow(
-                    data_handler=self.data_handler,
+                    words_store=self.words_store,
                     parent_window=self,
                     logger=self._logger)
                 select_date_window.wait_window()
                 # Создаём локальную переменную, чтоб случайно не изменить глобальную.
                 date = user_selected_date
                 try:
-                    words: dict = self.data_handler.get_words(
+                    words: dict = self.words_store.get_words(
                         date)  # type: ignore
                 except DateNotFoundError as e:
                     showerror("Дата не найдена", str(e))
@@ -195,17 +195,17 @@ class MainWindow(tk.Tk):
                 words = {value: key for key, value in words.items()}
                 self._logger.debug("Перевёрнутый словарь: %s", (words))
 
-        TestWindow(data_handler=self.data_handler,
+        TestWindow(words_store=self.words_store,
                    words=words,
                    logger=self._logger)
 
 
 class AddWordWindow(tk.Tk):
-    def __init__(self, *, data_handler: JSON, logger: logging.Logger):
+    def __init__(self, *, words_store: WordsStore, logger: logging.Logger):
         super().__init__()
 
         self._logger = logger
-        self.data_handler = data_handler
+        self.words_store = words_store
 
         self.title('Добавление слова')
 
@@ -231,19 +231,19 @@ class AddWordWindow(tk.Tk):
         today: Date = get_today()
         self._logger.debug(f'{today=}')
         try:
-            self.data_handler.add_word(today, self.entry_word.get(),
-                                       self.entry_translating.get())
+            self.words_store.add_word(today, self.entry_word.get(),
+                                      self.entry_translating.get())
         except WordIsEmptyError:
             showerror("Ошибка", "Введено пустое слово.")
             self._logger.warning("Пользователь ввёл пустое слово.")
-        self._logger.debug(self.data_handler.get_all_words())
+        self._logger.debug(self.words_store.get_all_words())
 
 
 class SearchWordWindow(tk.Tk):
-    def __init__(self, *, data_handler: JSON, logger: logging.Logger):
+    def __init__(self, *, words_store: WordsStore, logger: logging.Logger):
         super().__init__()
         self._logger = logger
-        self.data_handler = data_handler
+        self.words_store = words_store
         self.languages = ("английское", "русское")
 
         self._define_widgets()
@@ -280,7 +280,7 @@ class SearchWordWindow(tk.Tk):
             self._logger.warning("Получен неизвесный язык.")
             showerror("Ошибка", "Введён неизвесный язык.")
         try:
-            answer = self.data_handler.search_word(
+            answer = self.words_store.search_word(
                 self.entry_word.get(), is_eng)
         except WordIsEmptyError:
             showerror("Ошибка", "Введено пустое слово.")
@@ -293,10 +293,10 @@ class SearchWordWindow(tk.Tk):
 
 
 class SelectDateWindow(tk.Tk):
-    def __init__(self, *, data_handler: JSON, parent_window: tk.Tk, logger: logging.Logger):
+    def __init__(self, *, words_store: WordsStore, parent_window: tk.Tk, logger: logging.Logger):
         super().__init__()
         self._logger = logger
-        self.data_handler = data_handler
+        self.words_store = words_store
         self.parent_window = parent_window
 
         self.title('Выбор даты')
@@ -356,10 +356,10 @@ class SelectDateWindow(tk.Tk):
 
 
 class TestWindow(tk.Tk):
-    def __init__(self, *, data_handler: JSON, words: dict, logger: logging.Logger):
+    def __init__(self, *, words_store: WordsStore, words: dict, logger: logging.Logger):
         # Прокидываем обработчики и настройки.
         self._logger = logger
-        self.data_handler = data_handler
+        self.words_store = words_store
         self.words = words
 
         # Счетчики кол-ва правильно и неправильно угаданных пользователем слов.
@@ -373,7 +373,7 @@ class TestWindow(tk.Tk):
         self._pack_widgets()
 
         # Создаём новый генератор, чтобы была именно последовательность.
-        self.get_next_random_dict_key = gen_random_dict_key(self.words)
+        self.get_next_random_dict_key = JSON.gen_random_dict_key(self.words)
         self.current_word = next(self.get_next_random_dict_key)
         # Выводим первое слово.
         self.label_word.configure(text=self.current_word)

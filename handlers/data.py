@@ -29,11 +29,11 @@ class Date(NamedTuple):
         month = found_date.group(2)  # type: ignore
         year = found_date.group(3)  # type: ignore
 
-        result = Date.format_date(Date(day, month, year))
+        result = Date._format(Date(day, month, year))
         return result
 
     @staticmethod
-    def format_date(old_date: 'Date') -> 'Date':
+    def _format(old_date: 'Date') -> 'Date':
         # Забиваем нулями, чтоб довести до "дд.мм.гггг".
         new_day = old_date.day.zfill(2)
         new_month = old_date.month.zfill(2)
@@ -41,16 +41,50 @@ class Date(NamedTuple):
         return Date(new_day, new_month, new_year)
 
 
-# TODO: Разбить на 2 разных класса, один из которых отвечает за обработку файла, а другой - за работу со словами.
-# Так будет легче переписывать на использование БД.
 class JSON:
-    def __init__(self, path: str, logger: logging.Logger) -> None:
-        self._logger = logger
+    def __init__(self, path) -> None:
         self._path = path
 
+    def load_json(self) -> dict[str, dict[str, str]]:
+        with open(self._path, 'r', encoding='utf-8') as file:
+            return json.load(file)
+
+    def write_to_json(self, data: dict[str, dict[str, str]]) -> None:
+        with open(self._path, 'w', encoding='utf-8') as file:
+            json.dump(data, file, ensure_ascii=False, indent=True)
+
+    @staticmethod
+    def raw_dict_to_dict_with_namedtuple(raw_dict: dict[str, dict]) -> dict[Date, dict]:
+        words: dict[Date, dict[str, str]] = {}
+        for date, content in raw_dict.items():
+            parsed_date = Date.parse(date)
+            words[parsed_date] = content
+        return words
+
+    @staticmethod
+    def dict_with_namedtuple_to_raw_dict(dict_with_namedtuple: dict[Date, dict]) -> dict[str, dict]:
+        words: dict[str, dict[str, str]] = {}
+        for date, content in dict_with_namedtuple.items():
+            str_date = str(date)
+            words[str_date] = content
+        return words
+
+    @staticmethod
+    def gen_random_dict_key(dictionary: dict):
+        for rand_key in sample(list(dictionary), len(dictionary)):
+            yield rand_key
+
+
+class WordsStore:
+    # UNTESTED
+    def __init__(self, data_handler: JSON, logger: logging.Logger) -> None:
+        self._data_handler = data_handler
+        self._logger = logger
+
     def get_words(self, date: Date) -> dict[str, str]:
-        raw_json = self.__load_json()
-        all_words = self.__raw_dict_to_dict_with_namedtuple(raw_json)
+        raw_json = self._data_handler.load_json()
+        all_words = self._data_handler.raw_dict_to_dict_with_namedtuple(
+            raw_json)
         try:
             words = all_words[date]
         except KeyError:
@@ -61,7 +95,7 @@ class JSON:
 
     def get_all_words(self) -> dict[str, str]:
         # NOTE: Кстати, при объединении словарей несколько одинаковых ключей превращаются в один.
-        raw_json: dict = self.__load_json()
+        raw_json: dict = self._data_handler.load_json()
         words = {}
 
         for date in raw_json.keys():  # Делаем один общий словарь со всеми словами.
@@ -77,8 +111,8 @@ class JSON:
                 "Пользователь попытался добавить пустое слово.")
             raise exceptions.WordIsEmptyError
 
-        json = self.__load_json()
-        words = self.__raw_dict_to_dict_with_namedtuple(json)
+        json = self._data_handler.load_json()
+        words = self._data_handler.raw_dict_to_dict_with_namedtuple(json)
         try:
             words[date][word] = translating
         except KeyError:  # Если даты ещё нет,
@@ -86,9 +120,9 @@ class JSON:
             words[date][word] = translating
 
         # Пишем в json.
-        self.__write_to_json(
-            data=self.__dict_with_namedtuple_to_raw_dict(words))
-        self._logger.info(f"В {self._path} добавлено новое слово.")
+        self._data_handler.write_to_json(
+            data=self._data_handler.dict_with_namedtuple_to_raw_dict(words))
+        self._logger.info("Добавлено новое слово.")
 
     def search_word(self, word: str, is_search_in_main_lang: bool) -> str:
         # UNTESTED
@@ -106,33 +140,6 @@ class JSON:
             self._logger.warning(f"Слово {word} не найдено.")
             raise exceptions.WordNotFoundError(f"Слово {word} не найдено.")
 
-    def __load_json(self) -> dict[str, dict[str, str]]:
-        with open(self._path, 'r', encoding='utf-8') as file:
-            return json.load(file)
-
-    def __write_to_json(self, data: dict[str, dict[str, str]]) -> None:
-        with open(self._path, 'w', encoding='utf-8') as file:
-            json.dump(data, file, ensure_ascii=False, indent=True)
-
-    def __raw_dict_to_dict_with_namedtuple(self, raw_dict: dict[str, dict]) -> dict[Date, dict]:
-        words: dict[Date, dict[str, str]] = {}
-        for date, content in raw_dict.items():
-            parsed_date = Date.parse(date)
-            words[parsed_date] = content
-        return words
-
-    def __dict_with_namedtuple_to_raw_dict(self, dict_with_namedtuple: dict[Date, dict]) -> dict[str, dict]:
-        words: dict[str, dict[str, str]] = {}
-        for date, content in dict_with_namedtuple.items():
-            str_date = str(date)
-            words[str_date] = content
-        return words
-
 
 def get_today() -> Date:
     return Date.parse(datetime.now().strftime("%d.%m.%Y"))
-
-
-def gen_random_dict_key(dictionary: dict):
-    for rand_key in sample(list(dictionary), len(dictionary)):
-        yield rand_key
