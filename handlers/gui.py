@@ -257,7 +257,8 @@ class SearchWordWindow(tk.Tk):
         self.combobox_lang = ttk.Combobox(self, values=self.languages)
         self.label2 = ttk.Label(self, text="слово")
         self.entry_word = ttk.Entry(self)
-        self.button_search = ttk.Button(self, text="Поиск", command=self._search)
+        self.button_search = ttk.Button(
+            self, text="Поиск", command=self._search)
         self.answer_label = ttk.Label(self, text="")
 
     def _pack_widgets(self):
@@ -279,13 +280,14 @@ class SearchWordWindow(tk.Tk):
             self._logger.warning("Получен неизвесный язык.")
             showerror("Ошибка", "Введён неизвесный язык.")
         try:
-            answer = self.data_handler.search_word(self.entry_word.get(), is_eng)
+            answer = self.data_handler.search_word(
+                self.entry_word.get(), is_eng)
         except WordIsEmptyError:
             showerror("Ошибка", "Введено пустое слово.")
             self._logger.warning("Пользователь ввёл пустое слово.")
             return
         except WordNotFoundError as e:
-            showerror("Ошибка", e)
+            showerror("Ошибка", str(e))
             return
         self.answer_label.configure(text=answer)
 

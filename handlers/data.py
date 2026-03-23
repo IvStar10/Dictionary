@@ -49,8 +49,8 @@ class JSON:
         self._path = path
 
     def get_words(self, date: Date) -> dict[str, str]:
-        json = self.__load_json()
-        all_words = self.__raw_dict_to_dict_with_namedtuple(json)
+        raw_json = self.__load_json()
+        all_words = self.__raw_dict_to_dict_with_namedtuple(raw_json)
         try:
             words = all_words[date]
         except KeyError:
@@ -61,12 +61,11 @@ class JSON:
 
     def get_all_words(self) -> dict[str, str]:
         # NOTE: Кстати, при объединении словарей несколько одинаковых ключей превращаются в один.
-        json: dict = self.__load_json()
-        all_words = self.__raw_dict_to_dict_with_namedtuple(json)
+        raw_json: dict = self.__load_json()
         words = {}
 
-        for date in all_words.keys():  # Делаем один общий словарь со всеми словами.
-            words |= self.get_words(date)  # Объединяем словари.
+        for date in raw_json.keys():  # Делаем один общий словарь со всеми словами.
+            words |= raw_json[date]  # Объединяем словари.
 
         return words
 
@@ -98,14 +97,14 @@ class JSON:
         if not is_search_in_main_lang:
             words = {value: key for key, value in words.items()}
         if not word:
-            raise exceptions.WordIsEmptyError
             self._logger.warning(
                 "Пользователь попытался найти пустое слово.")
+            raise exceptions.WordIsEmptyError
         try:
             return words[word]
         except KeyError:
-            raise exceptions.WordNotFoundError(f"Слово {word} не найдено.")
             self._logger.warning(f"Слово {word} не найдено.")
+            raise exceptions.WordNotFoundError(f"Слово {word} не найдено.")
 
     def __load_json(self) -> dict[str, dict[str, str]]:
         with open(self._path, 'r', encoding='utf-8') as file:
