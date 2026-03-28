@@ -3,8 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <title>Words store</title>
+    <script>
+        function getWordsByDate() {
+            var wordsField = document.getElementById("wordsField");
+            var request = new XMLHttpRequest();
+            var dateInput = document.getElementsById("date");
+            var date = dateInput.value;
+            request.open("GET", `/words/${date}`);
+            request.responseType = "text";
+            request.onload = function() {
+                wordsField.textContent = request.response;
+            }
+            request.send();
+        }
+    </script>
 </head>
 <body>
     <a href="words">Get all words</a>
+    <input type="text" id="date" />
+    <button onclick="getWordsByDate();">Get words</button>
+    <div id="wordsField"></div>
 </body>
 </html>
