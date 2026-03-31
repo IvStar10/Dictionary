@@ -1,3 +1,4 @@
+# FIXME: Нелогичное наследование
 class DateParsingError(Exception):
     pass
 
