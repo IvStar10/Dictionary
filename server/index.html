@@ -7,7 +7,7 @@
         function getWordsByDate() {
             var wordsField = document.getElementById("wordsField");
             var request = new XMLHttpRequest();
-            var dateInput = document.getElementsById("date");
+            var dateInput = document.getElementById("date");
             var date = dateInput.value;
             request.open("GET", `/words/${date}`);
             request.responseType = "text";
