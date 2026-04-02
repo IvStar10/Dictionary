@@ -28,6 +28,8 @@ class MainWindow(tk.Tk):
         self._logger = logger
         self.words_store = words_store
 
+        self.sorting_ways = ("В алфавитном порядке", "В хронологическом порядке", "За определённое время")
+
         super().__init__()
 
         self.title('Словарь')
@@ -38,12 +40,13 @@ class MainWindow(tk.Tk):
         self._define_widgets()
         self._pack_widgets()
 
+        self.combobox_sorting.current(0)
+
         # Привязываем событие для обновления даты.
         self.bind('<<OnDateUpdate>>',
                   lambda _: self.label_date.configure(text=f'Выбраная дата: {str(user_selected_date)}'))
 
     def _define_internal_vars(self):
-        self.show_as = tk.IntVar()
         self.radiobtn_tests_time_var = tk.StringVar()
         self.radiobtn_tests_lang_var = tk.IntVar()
 
@@ -83,14 +86,11 @@ class MainWindow(tk.Tk):
         self.button_select_date = ttk.Button(
             master=self.tools_frame, text='Выбрать дату', command=self._button_select_date_click)
         # На рамке "show_as"
+        # TODO: Сделать grid
         self.label_show_as = ttk.Label(
-            master=self.frame_dictionary_show_as, text="Показывать")
-        self.radiobutton_as_abc = ttk.Radiobutton(master=self.frame_dictionary_show_as, text="В алфавитном порядке",
-                                                  variable=self.show_as, value=1)
-        self.radiobutton_as_time = ttk.Radiobutton(master=self.frame_dictionary_show_as, text="В хронологическом порядке",
-                                                   variable=self.show_as, value=2)
-        self.radiobutton_by_fixed_time = ttk.Radiobutton(master=self.frame_dictionary_show_as, text="За определённое время",
-                                                         variable=self.show_as, value=3)
+                master=self.frame_dictionary_show_as, text="Показывать:")
+        self.combobox_sorting = ttk.Combobox(master=self.frame_dictionary_show_as,
+                                             values=self.sorting_ways)  # UNTESTED
         self.treeview_words = ttk.Treeview(master=self.tab_dictionary)
 
         # На вкладке "Тесты"
@@ -131,9 +131,7 @@ class MainWindow(tk.Tk):
         self.search_word_button.grid(row=0, column=2)
         self.button_select_date.grid(row=0, column=3)
         self.label_show_as.pack(anchor='w')
-        self.radiobutton_as_abc.pack(anchor='w')
-        self.radiobutton_as_time.pack(anchor='w')
-        self.radiobutton_by_fixed_time.pack(anchor='w')
+        self.combobox_sorting.pack(anchor='w')
         self.treeview_words.pack()
 
         # На вкладке "Тесты"
