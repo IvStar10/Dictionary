@@ -69,6 +69,7 @@ class JSON:
             words[str_date] = content
         return words
 
+    # FIXME: Сделать отдельной ф-цией, т.к. это не имеет отношения к классу.
     @staticmethod
     def gen_random_dict_key(dictionary: dict):
         for rand_key in sample(list(dictionary), len(dictionary)):
