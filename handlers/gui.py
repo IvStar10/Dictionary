@@ -91,7 +91,7 @@ class MainWindow(tk.Tk):
                 master=self.frame_dictionary_show_as, text="Показывать:")
         self.combobox_sorting = ttk.Combobox(master=self.frame_dictionary_show_as,
                                              values=self.sorting_ways)  # UNTESTED
-        self.treeview_words = ttk.Treeview(master=self.tab_dictionary)
+        self.treeview_words = WordsTable(words_store=self.words_store, logger=self._logger, master=self.tab_dictionary)
 
         # На вкладке "Тесты"
         # На рамке "time"
@@ -457,3 +457,24 @@ class TestWindow(tk.Tk):
         showinfo('Тест завершён', f"""Результаты:
 {self._correct_words_counter} правильных слов, {self._incorrect_words_counter} неправильных слов.""")
         self._logger.info('Окно с тестами закрыто пользователем.')
+
+
+class WordsTable(ttk.Treeview):
+    def __init__(self, *, master, words_store: WordsStore, logger: logging.Logger):
+        self._words_store = words_store
+        self._logger = logger
+
+        self._headings = ('Слово', 'Перевод')
+        self._words_ids: list[str] = []
+
+        super().__init__(master=master, columns=self._headings, show='headings')
+
+        self._add_headings()
+        self.update()
+
+    def _add_headings(self):
+        for heading_id, heading_text in enumerate(self._headings):
+            self.heading(heading_id, text=heading_text)
+
+    def update(self):
+        pass
