@@ -43,8 +43,7 @@ class MainWindow(tk.Tk):
         self.combobox_sorting.current(0)
 
         # Привязываем событие для обновления даты.
-        self.bind('<<OnDateUpdate>>',
-                  lambda _: self.label_date.configure(text=f'Выбраная дата: {str(user_selected_date)}'))
+        self.bind('<<OnDateUpdate>>', self._on_date_update)
 
     def _define_internal_vars(self):
         self.radiobtn_tests_time_var = tk.StringVar()
@@ -89,6 +88,7 @@ class MainWindow(tk.Tk):
         # TODO: Сделать grid
         self.label_show_as = ttk.Label(
                 master=self.frame_dictionary_show_as, text="Показывать:")
+        # TODO: Добавить сортировку
         self.combobox_sorting = ttk.Combobox(master=self.frame_dictionary_show_as,
                                              values=self.sorting_ways)  # UNTESTED
         self.treeview_words = WordsTable(words_store=self.words_store, logger=self._logger, master=self.tab_dictionary)
@@ -196,6 +196,10 @@ class MainWindow(tk.Tk):
         TestWindow(words_store=self.words_store,
                    words=words,
                    logger=self._logger)
+
+    def _on_date_update(self, event):
+        self.label_date.configure(text=f'Выбраная дата: {str(user_selected_date)}')
+        self.treeview_words.update()
 
 
 class AddWordWindow(tk.Tk):
@@ -476,5 +480,20 @@ class WordsTable(ttk.Treeview):
         for heading_id, heading_text in enumerate(self._headings):
             self.heading(heading_id, text=heading_text)
 
+    def _reset_table_data(self):
+        if self._words_ids:
+            self.delete(*self._words_ids)
+            self._words_ids = []
+
     def update(self):
-        pass
+        self._reset_table_data()
+
+        try:
+            words: dict[str, str] = self._words_store.get_words(user_selected_date)
+        except DateNotFoundError:
+            self._words_ids.append(self.insert(parent='', index=0, values=('-', '-')))
+            return
+
+        for word, translating in words.items():
+            word_id = self.insert(parent='', index='end', values=(word, translating))
+            self._words_ids.append(word_id)
