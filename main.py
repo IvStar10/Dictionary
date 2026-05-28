@@ -1,5 +1,3 @@
-# TODO: Добавить поиск по словарю (что-то вроде гугл-переводчика).
-# TODO: Разобраться с tkinter.Treeview наконец-то!
 # TODO: Написать тесты, хотя бы для data.py
 import logging
 from handlers.gui import MainWindow
